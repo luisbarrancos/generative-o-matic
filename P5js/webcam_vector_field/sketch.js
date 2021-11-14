@@ -1,15 +1,20 @@
-// code from https://editor.p5js.org/chesterdols/sketches/B12rzkBQx
-// P5.js Code from Daniel Shiffman instructional
-// <https://www.youtube.com/watch?v=BjoM9oKOAKY&t=542s>
+
+//
+// Webcam video feed interaction with vector field particles
+// https://p5.readthedocs.io/en/latest/tutorials/vector.html
+// Particles based on Daniel Shiffman instructional
+//
 
 // steps should place more samples on Y or X if the aspect ratio != square
-let xstep;
-let ystep;
-let xvec, yvec;
-let fb;
+let x_step;
+let y_step;
+let x_vec, y_vec;
+
+// for particle trails we need a second framebuffer object
+// let fb;
 
 let particles = [];
-let flowfield;
+let flow_field;
 
 let cam;
 
@@ -17,15 +22,16 @@ let orange;
 let midblu;
 let grey;
 
-const num_particles = 250;
+const num_particles = 500;
+const frame_rate    = 25;
 
 function setup()
 {
     orange = color("#ffa100");
     midblu = color("#0dade6");
-    grey = color("#575e59");
+    grey   = color("#575e59");
 
-    frameRate(25);
+    frameRate(frame_rate);
     pixelDensity(1);
     colorMode(HSB);
 
@@ -33,24 +39,21 @@ function setup()
     const ratio = w / h;
 
     let canvas = createCanvas(w, h);
-    fb = createGraphics(w, h);
+    // fb = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
     // minimize data stream
     // https://w3c.github.io/mediacapture-main/getusermedia.html#media-track-constraints
     // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getSupportedConstraints#Result
-    const constraints =
-    {
-        video:
-        {
-            width:  { min: 640, ideal: min(w, 1280), max: 1280},
-            height: { min: 480, ideal: min(h, 720), max: 720},
-            frameRate: { min: 25, ideal: 25, max: 60},
-            aspectRatio: w / h,
+    const constraints = {
+        video : {
+            width : {min : 640, ideal : min(w, 1280), max : 1280},
+            height : {min : 480, ideal : min(h, 720), max : 720},
+            frameRate : {min : 25, ideal : 25, max : 60},
+            aspectRatio : w / h,
         },
-        audio: false
+        audio : false
     };
-
     cam = createCapture(constraints);
     cam.size(width, height);
     cam.hide();
@@ -61,14 +64,14 @@ function setup()
         particles[i] = new Particle();
     }
 
-    // base number of steps, change acc. to aspect ratio
+    // base number of steps, change acceleration. to aspect ratio
     const step = 20;
-    xstep = step;
-    ystep = floor(step * height / width);
+    x_step     = step;
+    y_step     = floor(step * height / width);
 
     // divide the canvas into aspect compensated cells
-    xvec = floor(width / xstep);
-    yvec = floor(height / ystep);
+    x_vec = floor(width / x_step);
+    y_vec = floor(height / y_step);
 
     background(midblu);
 }
@@ -82,7 +85,8 @@ function draw()
     image(cam, 0, 0, width, height);
     pop();
 
-    //filter(POSTERIZE, 8); // invert, erode, dilate, blur, grey, posterize, threshold
+    // filter(POSTERIZE, 8); // invert, erode, dilate, blur, grey, posterize,
+    // threshold
     loadPixels();
     // clear it from view, or comment to debug the video feed
     background(midblu);
@@ -95,10 +99,10 @@ function draw()
         particles[k].show();
         particles[k].update();
         particles[k].edge();
-        particles[k].follow(flowfield);
+        particles[k].follow(flow_field);
     }
     // 2nd framebuffer object for trails
-    //image(fb, 0, 0);
+    // image(fb, 0, 0);
 }
 
 // ITU-R BT.709 relative luminance Y
@@ -110,24 +114,26 @@ function luminance(r, g, b)
 function FlowField()
 {
     // create an array corresponding to the number of grid entries
-    flowfield = new Array(xvec * yvec);
+    flow_field = new Array(x_vec * y_vec);
 
     // traverse each vertical and horizontal grid unit
-    for (let y = 0; y < height; y += ystep)
+    for (let y = 0; y < height; y += y_step)
     {
-        for (let x = 0; x < width; x += xstep)
+        for (let x = 0; x < width; x += x_step)
         {
-            // for each grid position at which we calculate the optical flow hack
-            let vX = x / xstep;
-            let vY = y / ystep;
+            // for each grid position at which we calculate the optical flow
+            // hack
+            const x_cell = x / x_step;
+            const y_cell = y / y_step;
 
-            // 4 number of channels, RGBA, so the index iterates over each RGBA tuple
-            let i = (x + (y * width)) * 4;
+            // 4 number of channels, RGBA, so the index iterates over each RGBA
+            // tuple
+            const i = (x + (y * width)) * 4;
 
             // and get the R, G, B channels value
-            let r = pixels[i + 0];
-            let g = pixels[i + 1];
-            let b = pixels[i + 2];
+            const r = pixels[i + 0];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
 
             // compute the relative luminance Y (from ITU-R BT.709 RGB primaries
             //  D65 white point), CIE (1931) XYZ->RGB matrix
@@ -135,24 +141,27 @@ function FlowField()
 
             // create an index for a linear 1D array from the horizontal
             // vertical grid unit counters
-            let index = vX + (vY * xvec);
+            const index = x_cell + (y_cell * x_vec);
 
             // create a vector V0 corresponding to each grid unit/cell
-            let v0 = createVector(vX, vX);
+            const v0 = createVector(x_cell, x_cell);
 
-            // and another that rotates 2 PI radians based on the relative luminance Y
-            // this isn't really optical flow, but a crude approximation to interact with
-            // webcam pixel values. For proper optical flow one would need to compute the
-            // image gradient, which would imply two framebuffers, one for previous
-            // time t_(n-1) and another for present time t_n
+            // and another that rotates 2 PI radians based on the relative
+            // luminance Y this isn't really optical flow, but a crude
+            // approximation to interact with webcam pixel values. For proper
+            // optical flow one would need to compute the image gradient, which
+            // would imply two framebuffers, one for previous time t_(n-1) and
+            // another for present time t_n
             //
-            let v1 = createVector(vX * cos(lum * TWO_PI), vX * sin(lum * TWO_PI));
+            const v1 = createVector(
+                x_cell * cos(lum * TWO_PI), x_cell * sin(lum * TWO_PI));
 
             // measure the angle between them in radians
-            let vecDirect = v0.angleBetween(v1);
+            const vecDirect = v0.angleBetween(v1);
+
             // and create a new vector from this angle
             let dir = p5.Vector.fromAngle(vecDirect);
-            
+
             /*
             // if it stabilizes with no input (static feed), randomize a bit
             if (dir.mag() < 0.1)
@@ -165,33 +174,32 @@ function FlowField()
             // NOTE: some magnitude randomization can be interesting, and
             //       setting split components for dir x, y, z can also be
             //       interesting.
-            flowfield[index] = dir;
+            flow_field[index] = dir;
             dir.setMag(4);
-            
+
             // Debug the "motion vectors" with hue mode nad lines
             // HSB mode, change alpha
-            //stroke(lum * 255, 255, 255);
+            // stroke(lum * 255, 255, 255);
 
             push();
-            
+
             translate(x, y);
             rotate(dir.heading());
-            //line(0, 0, ystep, 0); // debug lines
-            
+            // line(0, 0, y_step, 0); // debug lines
+
             // primary rotating squares
             noStroke();
             fill(grey);
             rotate(frameCount * 0.03);
-            square(lum * xstep / 2, lum * ystep / 2, lum * dir.mag() * 5);
-            
+            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 5);
+
             // secondary rotating squares
             noFill()
             stroke(255);
             rotate(frameCount * 0.05);
-            square(lum * xstep / 2, lum * ystep / 2, lum * dir.mag() * 7);
+            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 7);
 
             pop();
-            
         }
     }
 }
@@ -201,42 +209,42 @@ class Particle
     constructor()
     {
         // initialize to a random position on the canvas
-        this.x        = random(width);
-        this.y        = random(height);
-        this.pos      = createVector(this.x, this.y);
-        this.vel      = createVector(0, 0); // dPdt
-        this.acc      = createVector(0, 0); // dP^2/d^2t
-        this.r        = 2.0;
-        this.maxspeed = 5;
-        this.prevP    = this.pos.copy();
+        this.x              = random(width);
+        this.y              = random(height);
+        this.position       = createVector(this.x, this.y);
+        this.velocity       = createVector(0, 0); // dPdt
+        this.acceleration   = createVector(0, 0); // dP^2/d^2t
+        this.r              = 2.0;
+        this.max_speed      = 5;
+        this.previous_point = this.position.copy();
     }
 
     update()
     {
-        this.pos.add(this.vel); // add dPdt
-        this.vel.add(this.acc); // add dP^2/d^2t
-        this.acc.mult(0);
-        this.vel.limit(this.maxspeed);
+        this.position.add(this.velocity);     // add dPdt
+        this.velocity.add(this.acceleration); // add dP^2/d^2t
+        this.acceleration.mult(0);
+        this.velocity.limit(this.max_speed);
     }
 
     updatePreviousPosition()
     {
-        this.prevP.x = this.pos.x;
-        this.prevP.y = this.pos.y;
+        this.previous_point.x = this.position.x;
+        this.previous_point.y = this.position.y;
     }
 
     follow(vectors)
     {
-        const x     = floor(this.pos.x / xstep); // init at randomized x cell
-        const y     = floor(this.pos.y / ystep); // init at randomized y cell
-        const index = x + y * xvec; // linear 1d array indexing
+        const x = floor(this.position.x / x_step); // init at randomized x cell
+        const y = floor(this.position.y / y_step); // init at randomized y cell
+        const index = x + y * x_vec;               // linear 1d array indexing
         const force = vectors[index]; // access the force computed earlier
-        this.applyForce(force); // and apply it
+        this.applyForce(force);       // and apply it
     }
 
     applyForce(force)
     {
-        this.acc.add(force); // add force
+        this.acceleration.add(force); // add force
     }
 
     show()
@@ -244,7 +252,7 @@ class Particle
         // display dots
         fill(orange);
         noStroke();
-        ellipse(this.pos.x, this.pos.y, 6, 6);
+        ellipse(this.position.x, this.position.y, 6, 6);
 
         // and rotating squares
         push();
@@ -252,10 +260,10 @@ class Particle
         noFill();
         stroke(190, 90, 130, 10);
         strokeWeight(0.5);
-        translate(this.pos.x, this.pos.y);
-        rotate(frameCount * this.prevP.y * 0.0001);
+        translate(this.position.x, this.position.y);
+        rotate(frameCount * this.previous_point.y * 0.0001);
         square(0, 0, 16);
-        
+
         pop();
 
         this.updatePreviousPosition();
@@ -264,24 +272,24 @@ class Particle
     edge()
     {
         // restrict the particles to the canvas, check the edges
-        if (this.pos.x < -this.r)
+        if (this.position.x < -this.r)
         {
-            this.pos.x = width + this.r;
+            this.position.x = width + this.r;
             this.updatePreviousPosition();
         }
-        if (this.pos.y < -this.r)
+        if (this.position.y < -this.r)
         {
-            this.pos.y = height + this.r;
+            this.position.y = height + this.r;
             this.updatePreviousPosition();
         }
-        if (this.pos.x > width + this.r)
+        if (this.position.x > width + this.r)
         {
-            this.pos.x = -this.r;
+            this.position.x = -this.r;
             this.updatePreviousPosition();
         }
-        if (this.pos.y > height + this.r)
+        if (this.position.y > height + this.r)
         {
-            this.pos.y = -this.r;
+            this.position.y = -this.r;
             this.updatePreviousPosition();
         }
     }
