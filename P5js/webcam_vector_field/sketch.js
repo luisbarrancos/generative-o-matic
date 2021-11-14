@@ -6,7 +6,7 @@
 let xstep;
 let ystep;
 let xvec, yvec;
-let fb, bg;
+let fb;
 
 let particles = [];
 let flowfield;
@@ -16,7 +16,6 @@ let cam;
 let orange;
 let midblu;
 let grey;
-let opac = 1;
 
 const num_particles = 250;
 
@@ -35,7 +34,6 @@ function setup()
 
     let canvas = createCanvas(w, h);
     fb = createGraphics(w, h);
-    bg = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
     // minimize data stream
@@ -54,7 +52,6 @@ function setup()
     };
 
     cam = createCapture(constraints);
-    //cam = createCapture(VIDEO);
     cam.size(width, height);
     cam.hide();
 
@@ -69,18 +66,23 @@ function setup()
     xstep = step;
     ystep = floor(step * height / width);
 
-    // divide the canvas into aspect compensated grid
+    // divide the canvas into aspect compensated cells
     xvec = floor(width / xstep);
     yvec = floor(height / ystep);
 
-    background(grey);
+    background(midblu);
 }
 
 function draw()
 {
-    // Rotating Vectors
+    // load webcam feed and flip horizontally
+    push();
+    translate(cam.width, 0);
+    scale(-1, 1);
     image(cam, 0, 0, width, height);
-    //filter(INVERT); // invert, erode, dilate, blur, grey, posterize, threshold
+    pop();
+
+    //filter(POSTERIZE, 8); // invert, erode, dilate, blur, grey, posterize, threshold
     loadPixels();
     // clear it from view, or comment to debug the video feed
     background(midblu);
@@ -95,8 +97,8 @@ function draw()
         particles[k].edge();
         particles[k].follow(flowfield);
     }
-
-    image(fb, 0, 0);
+    // 2nd framebuffer object for trails
+    //image(fb, 0, 0);
 }
 
 // ITU-R BT.709 relative luminance Y
@@ -127,17 +129,13 @@ function FlowField()
             let g = pixels[i + 1];
             let b = pixels[i + 2];
 
-            // let br = (r + b + g) / 765.0;
-            //br = luminance(r, g, b) / 255;
-            // compute the relative luminance Y (from ITU-R BT.709 RGB primaries, D65 white point)
-            // CIE (1931) XYZ->RGB matrix
-            const br = map(luminance(r, g, b), 0, 255, 0, 1);
-            //br = map(br, 0, 1, 1, 0);
+            // compute the relative luminance Y (from ITU-R BT.709 RGB primaries
+            //  D65 white point), CIE (1931) XYZ->RGB matrix
+            const lum = map(luminance(r, g, b), 0, 255, 0, 1);
 
-            // create an index for a linear 1D array from the horizontal, vertical grid unit counters
+            // create an index for a linear 1D array from the horizontal
+            // vertical grid unit counters
             let index = vX + (vY * xvec);
-
-            // let vecDirect = noise(xNoise, yNoise, time) * 2*(TWO_PI);
 
             // create a vector V0 corresponding to each grid unit/cell
             let v0 = createVector(vX, vX);
@@ -148,11 +146,10 @@ function FlowField()
             // image gradient, which would imply two framebuffers, one for previous
             // time t_(n-1) and another for present time t_n
             //
-            let v1 = createVector(vX * cos(br * TWO_PI), vX * sin(br * TWO_PI));
+            let v1 = createVector(vX * cos(lum * TWO_PI), vX * sin(lum * TWO_PI));
 
             // measure the angle between them in radians
             let vecDirect = v0.angleBetween(v1);
-            // let vecDirect = br * 2 * (TWO_PI);
             // and create a new vector from this angle
             let dir = p5.Vector.fromAngle(vecDirect);
             
@@ -169,31 +166,29 @@ function FlowField()
             //       setting split components for dir x, y, z can also be
             //       interesting.
             flowfield[index] = dir;
-            dir.setMag(3);
+            dir.setMag(4);
             
-            // Debug motion vectors
+            // Debug the "motion vectors" with hue mode nad lines
             // HSB mode, change alpha
-            //stroke(br * 255, 255, 255);
+            //stroke(lum * 255, 255, 255);
+
             push();
+            
             translate(x, y);
             rotate(dir.heading());
-            //line(0, 0, ystep, 0);
+            //line(0, 0, ystep, 0); // debug lines
+            
+            // primary rotating squares
             noStroke();
             fill(grey);
-            //ellipse(0 + xstep / 2, 0 + ystep / 2, dir.x * 3, dir.y * 3);
             rotate(frameCount * 0.03);
-            square(br * xstep / 2, br * ystep / 2, br * dir.mag() * 5);
+            square(lum * xstep / 2, lum * ystep / 2, lum * dir.mag() * 5);
+            
+            // secondary rotating squares
             noFill()
             stroke(255);
             rotate(frameCount * 0.05);
-            square(br * xstep / 2, br * ystep / 2, br * dir.mag() * 7);
-            
-            /*
-            stroke(0, 0, 30);
-            strokeWeight(0.5);
-            scale(br * dir.mag());
-            square(br * xstep / 2, br * ystep / 2, br * dir.mag() * 3);
-            */
+            square(lum * xstep / 2, lum * ystep / 2, lum * dir.mag() * 7);
 
             pop();
             
@@ -212,15 +207,14 @@ class Particle
         this.vel      = createVector(0, 0); // dPdt
         this.acc      = createVector(0, 0); // dP^2/d^2t
         this.r        = 2.0;
-        this.h        = 0;
         this.maxspeed = 5;
         this.prevP    = this.pos.copy();
     }
 
     update()
     {
-        this.pos.add(this.vel); // add dPdt, where P(t) = position
-        this.vel.add(this.acc); // add A(t) = dP^2/d^2t
+        this.pos.add(this.vel); // add dPdt
+        this.vel.add(this.acc); // add dP^2/d^2t
         this.acc.mult(0);
         this.vel.limit(this.maxspeed);
     }
@@ -247,47 +241,24 @@ class Particle
 
     show()
     {
-        // display something at newly computed particle position
+        // display dots
         fill(orange);
-        //fb.fill(50, 200, 100, 0.01);
         noStroke();
-        //stroke(orange);
         ellipse(this.pos.x, this.pos.y, 6, 6);
 
+        // and rotating squares
         push();
+
         noFill();
-        //stroke(140, 90, 170, 10);
         stroke(190, 90, 130, 10);
         strokeWeight(0.5);
         translate(this.pos.x, this.pos.y);
         rotate(frameCount * this.prevP.y * 0.0001);
         square(0, 0, 16);
-        pop();
-        /*
-        push();
-        rectMode(CENTER);
-        rect(
-            this.pos.x,
-            this.pos.y,
-            abs(this.pos.x - this.prevP.x) * 3,
-            abs(this.pos.y - this.prevP.y) * 3);
-        pop();
-        */
-        //line(this.pos.x, this.pos.y, this.prevP.x, this.prevP.y);
-
         
+        pop();
+
         this.updatePreviousPosition();
-        /*
-        fb.stroke(this.h, 255, 255, 25);
-        this.h = this.h + 1;
-        if (this.h > 255)
-        {
-            this.h = 0;
-        }
-        fb.strokeWeight(1);
-        fb.line(this.pos.x, this.pos.y, this.prevP.x, this.prevP.y);
-        this.updatePreviousPosition();
-        */
     }
 
     edge()
@@ -316,7 +287,9 @@ class Particle
     }
 }
 
+/*
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
 }
+*/
