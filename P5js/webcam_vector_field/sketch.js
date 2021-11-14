@@ -6,7 +6,7 @@
 let xstep;
 let ystep;
 let xvec, yvec;
-let fb;
+let fb, bg;
 
 let particles = [];
 let flowfield;
@@ -16,6 +16,9 @@ let cam;
 let orange;
 let midblu;
 let grey;
+let opac = 1;
+
+const num_particles = 250;
 
 function setup()
 {
@@ -23,7 +26,7 @@ function setup()
     midblu = color("#0dade6");
     grey = color("#575e59");
 
-    frameRate(2);
+    frameRate(25);
     pixelDensity(1);
     colorMode(HSB);
 
@@ -32,6 +35,7 @@ function setup()
 
     let canvas = createCanvas(w, h);
     fb = createGraphics(w, h);
+    bg = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
     // minimize data stream
@@ -55,7 +59,7 @@ function setup()
     cam.hide();
 
     // allocate storage for N particles
-    for (let i = 0; i < 500; i++)
+    for (let i = 0; i < num_particles; i++)
     {
         particles[i] = new Particle();
     }
@@ -93,7 +97,6 @@ function draw()
     }
 
     image(fb, 0, 0);
-
 }
 
 // ITU-R BT.709 relative luminance Y
@@ -184,6 +187,13 @@ function FlowField()
             stroke(255);
             rotate(frameCount * 0.05);
             square(br * xstep / 2, br * ystep / 2, br * dir.mag() * 7);
+            
+            /*
+            stroke(0, 0, 30);
+            strokeWeight(0.5);
+            scale(br * dir.mag());
+            square(br * xstep / 2, br * ystep / 2, br * dir.mag() * 3);
+            */
 
             pop();
             
@@ -239,8 +249,34 @@ class Particle
     {
         // display something at newly computed particle position
         fill(orange);
+        //fb.fill(50, 200, 100, 0.01);
         noStroke();
+        //stroke(orange);
         ellipse(this.pos.x, this.pos.y, 6, 6);
+
+        push();
+        noFill();
+        //stroke(140, 90, 170, 10);
+        stroke(190, 90, 130, 10);
+        strokeWeight(0.5);
+        translate(this.pos.x, this.pos.y);
+        rotate(frameCount * this.prevP.y * 0.0001);
+        square(0, 0, 16);
+        pop();
+        /*
+        push();
+        rectMode(CENTER);
+        rect(
+            this.pos.x,
+            this.pos.y,
+            abs(this.pos.x - this.prevP.x) * 3,
+            abs(this.pos.y - this.prevP.y) * 3);
+        pop();
+        */
+        //line(this.pos.x, this.pos.y, this.prevP.x, this.prevP.y);
+
+        
+        this.updatePreviousPosition();
         /*
         fb.stroke(this.h, 255, 255, 25);
         this.h = this.h + 1;
