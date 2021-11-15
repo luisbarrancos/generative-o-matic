@@ -34,13 +34,16 @@ let particles = [];
 let flow_field;
 
 let cam;
-
+// avoid the hassle and set the color palette
 let orange;
 let midblu;
 let grey;
 
 const num_particles = 500;
 const frame_rate    = 25;
+
+// CCapture video
+const capturer = new CCapture({ format: "png", framerate: frame_rate });
 
 function setup()
 {
@@ -93,8 +96,40 @@ function setup()
     background(midblu);
 }
 
+var start_millis; // counter for recording, undefined for null test
+
 function draw()
 {
+    // CCapture block
+    // start recording on the first frame
+    if (frameCount === 1)
+    {
+        capturer.start();
+    }
+
+    if (start_millis == null)
+    {
+        start_millis = millis();
+    }
+
+    // duration in milliseconds
+    let duration = 10000;
+    // how far we are in animation
+    let elapsed = millis() - start_millis;
+    let t = map(elapsed, 0, duration, 0, 1);
+
+    // if we have passed t=1 then stop
+    if (t > 1)
+    {
+        noLoop();
+        console.log("Finished recording.");
+        capturer.stop();
+        capturer.save();
+        return;
+    }
+    // Done with CCapture, proceed with main canvas
+
+
     // load webcam feed and flip horizontally
     push();
     translate(cam.width, 0);
@@ -218,6 +253,11 @@ function FlowField()
             pop();
         }
     }
+    // Done with the main canvas/sketch
+
+    // Finalize CCapture
+    console.log("capturing frame");
+    capturer.capture(document.getElementById("defaultCanvas0"));
 }
 
 class Particle
