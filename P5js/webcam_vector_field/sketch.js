@@ -43,7 +43,7 @@ const num_particles = 500;
 const frame_rate    = 25;
 
 // CCapture video
-const capturer = new CCapture({ format: "png", framerate: frame_rate });
+const capturer = new CCapture({format : "png", framerate : frame_rate});
 
 function setup()
 {
