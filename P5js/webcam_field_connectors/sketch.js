@@ -22,6 +22,9 @@
 // Particles based on Daniel Shiffman instructional
 //
 
+"use strict";
+p5.disableFriendlyErrors = true;
+
 // steps should place more samples on Y or X if the aspect ratio != square
 let x_step;
 let y_step;
@@ -39,23 +42,74 @@ let orange;
 let midblu;
 let grey;
 
+//
+// Adding bells & whistles and this is getting heavier.
+// Don't go above 250-350.
 const num_particles = 100;
 const frame_rate    = 25;
+
 // QHD = 960x540
-const w = 640, h = 480;
+const w = 800, h = 600;
 const ratio = w / h;
 
-// CCapture video
-const capturer = new CCapture({ format: "png", framerate: frame_rate });
+// Get mic input to agitate the particles. We feed the AV/cam data, luminance
+// optical flow approximation. Shake them with audio feed (above certain
+// threshold), connect them if they are within a certain distance, and then we
+// sonorize them via FM synthesis and add a bit of effects on top
+// it would be interesting to play a sound file in the background, ambience
+// then randomly compose some beats.
+// A density function plugged to the search radius produces interesting effects,
+// so does swapping the mapping in the connector lines - probably best combined
+// with chaser and repulsor particles.
 
+let mic;
+// pretty standard FM synthesis
+// https://p5js.org/examples/sound-frequency-modulation.html
+let carrier, modulator;
+let modulator_frequency, modulator_amplitude;
+let reverb;
+
+//
+// TODO: start splitting into functions for the AV capture, audio input
+//
 function setup()
 {
+    // we'll be hearing the carrier
+    modulator_amplitude = 100;
+    modulator_frequency = 200;
+
+    carrier = new p5.Oscillator("sine");
+    carrier.amp(0.1);
+    carrier.freq(220); // carrier base frequency
+    carrier.disconnect();
+
+    // modulated by this modulator
+    modulator = new p5.Oscillator("sine");
+    modulator.freq(modulator_frequency);
+    modulator.amp(modulator_amplitude);
+    modulator.disconnect();
+
+    carrier.start();
+    modulator.start();
+    carrier.freq(modulator);
+
+    // give some depth, Convolve seems heavier though. Try reverb
+    // https://p5js.org/reference/#/p5.Reverb
+    reverb = new p5.Reverb();
+    reverb.drywet(0.7);
+    // long delay with a short time gives a nice layered texture
+    reverb.process(carrier, 15, 5, 0.1);
+
+    // get audio input/mic to shake particles a bit
+    mic = new p5.AudioIn();
+    mic.start();
+
     orange = color("#ffa100");
     midblu = color("#0dade6");
     grey   = color("#575e59");
 
     frameRate(frame_rate);
-    pixelDensity(1);
+    pixelDensity(1); // don't change
     colorMode(HSB);
 
     let canvas = createCanvas(w, h);
@@ -95,38 +149,12 @@ function setup()
 
     background(midblu);
 
-    //frameRate(25);
-    noLoop();
+    frameRate(frame_rate);
+    // noLoop();
 }
-
-var start_millis; // counter for recording, undefined for null test
 
 function draw()
 {
-    /*
-    // CCapture block
-    // start recording on the first frame
-    if (frameCount === 1)
-    {
-        //capturer.start();
-    }
-
-    if (start_millis == null)
-    {
-        start_millis = millis();
-    }
-
-    // duration in milliseconds
-    let duration = 10000;
-    // how far we are in animation
-    let elapsed = millis() - start_millis;
-    let t = map(elapsed, 0, duration, 0, 1);
-
-
-    // Done with CCapture, proceed with main canvas
-    */
-
-
     // load webcam feed and flip horizontally
     push();
     translate(cam.width, 0);
@@ -134,17 +162,22 @@ function draw()
     image(cam, 0, 0, width, height);
     pop();
 
-    // filter(POSTERIZE, 8); // invert, erode, dilate, blur, grey, posterize,
+    // filter(POSTERIZE, 4); // invert, erode, dilate, blur, grey, posterize,
     // threshold
     loadPixels();
     // clear it from view, or comment to debug the video feed
     background(midblu);
 
+    // AUDIO: get the mic feed
+    const level = map(mic.getLevel(), 0.0, 0.5, 0.0, 1.0);
+    // console.log(level);
+
     // initialize the flow field
     FlowField();
 
-    // leave radius fixed for now, but we can affect it by a force
-    const radius = 50.0;
+    // search radius for particle connectors. Constant for now, but
+    // a density function can also produce interesting results.
+    const radius = 100.0;
 
     for (let k = 0; k < particles.length; k++)
     {
@@ -152,23 +185,25 @@ function draw()
         particles[k].update();
         particles[k].edge();
         particles[k].follow(flow_field);
+
         // check distance and connect, the distance will drive the sound
+        // FM synthesis params.
         particles[k].connect(particles.slice(k), radius);
+
+        // shake things a bit if mic goes above a threshold, a "refresh"
+        // of sorts to randomize things a bit.
+        if (level > 0.1)
+        {
+            particles[k].agitate(level);
+        }
+
+        // comparing modulus of frame count vs time in a times array can
+        // introduce a rythm (todo).
+        // if (int(frameCount % 25) == 0)
+        particles[k].sonorize(radius);
     }
     // 2nd framebuffer object for trails
     // image(fb, 0, 0);
-
-    /*
-    // if we have passed t=1 then stop
-    if (t > 1)
-    {
-        noLoop();
-        console.log("Finished recording.");
-        capturer.stop();
-        //capturer.save();
-        return;
-    }
-    */
 }
 
 // ITU-R BT.709 relative luminance Y
@@ -203,14 +238,16 @@ function FlowField()
 
             // compute the relative luminance Y (from ITU-R BT.709 RGB primaries
             //  D65 white point), CIE (1931) XYZ->RGB matrix
+            // DEBUG w random
             const lum = map(luminance(r, g, b), 0, 255, 0, 1);
+            // const lum = random();
 
             // create an index for a linear 1D array from the horizontal
             // vertical grid unit counters
             const index = x_cell + (y_cell * x_vec);
 
             // create a vector V0 corresponding to each grid unit/cell
-            const v0 = createVector(x_cell, x_cell);
+            const v0 = createVector(x_cell, y_cell);
 
             // and another that rotates 2 PI radians based on the relative
             // luminance Y this isn't really optical flow, but a crude
@@ -219,8 +256,8 @@ function FlowField()
             // would imply two framebuffers, one for previous time t_(n-1) and
             // another for present time t_n
             //
-            const v1 = createVector(
-                x_cell * cos(lum * TWO_PI), x_cell * sin(lum * TWO_PI));
+            // xcell * cos(2PI xi), xcell * sin(2PI xi)
+            const v1 = createVector(cos(lum * TWO_PI), sin(lum * TWO_PI));
 
             // measure the angle between them in radians
             const vecDirect = v0.angleBetween(v1);
@@ -228,13 +265,11 @@ function FlowField()
             // and create a new vector from this angle
             let dir = p5.Vector.fromAngle(vecDirect);
 
-            /*
             // if it stabilizes with no input (static feed), randomize a bit
             if (dir.mag() < 0.1)
             {
                 dir.add(createVector(noise(x), noise(y)));
             }
-            */
 
             // push the new vector into the array and set its magnitude
             // NOTE: some magnitude randomization can be interesting, and
@@ -243,41 +278,39 @@ function FlowField()
             flow_field[index] = dir;
             dir.setMag(4);
 
+            // comment to simplify, debug, but notice the last two shapes
+            // are part of the 3d system
+
             // Debug the "motion vectors" with hue mode nad lines
             // HSB mode, change alpha
             // stroke(lum * 255, 255, 255);
-            push();
 
+            push();
             translate(x, y);
             rotate(dir.heading());
             // line(0, 0, y_step, 0); // debug lines
 
-            /*
             // primary rotating squares
             noStroke();
-            fill(grey);
+            fill(0, 0, 40, 0.4);
             rotate(frameCount * 0.03);
             square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 5);
 
             // secondary rotating squares
             noFill()
-            stroke(255);
+            stroke(0, 0, 255, 0.6);
             rotate(frameCount * 0.05);
             square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 7);
-            */
-
             pop();
         }
     }
     // Done with the main canvas/sketch
-
-    // Finalize CCapture
-
-    /*
-    console.log("capturing frame");
-    capturer.capture(document.getElementById("defaultCanvas0"));
-    */
 }
+
+//
+// TODO: Move to own file, add repulsor method, chaser method, clean things a
+// bit
+//
 
 class Particle
 {
@@ -319,7 +352,7 @@ class Particle
 
     applyForce(force)
     {
-        this.acceleration.add(force); // add force
+        this.acceleration.add(force); // add jolt to acceleration
     }
 
     show()
@@ -369,33 +402,84 @@ class Particle
         }
     }
 
-    // search for connections, neighbours within a radius. Heavy sadly.
-    // NOTE: write paper investigating the contribution of javascript 
-    //       worldwide for CO2 emissions and rise in ocean levels.
+    // Search for neighbours within a given radius, the bigger the radius,
+    // and the number of particles, the heavier.
+    // Perhaps adding other data structures would be of interest, but time
+    // would be best invested on OpenFrameWorks in that case.
+    // Note to self: how much is Javascript contributing to global warming?
+    //
     connect(particles, radius)
     {
-        particles.forEach(element =>
-            {
-                const dis = dist(
-                    this.position.x, 
-                    this.position.y, 
-                    element.previous_point.x, 
-                    element.previous_point.y);
-                    
+        this.particle_dist   = 0.0;
+        this.normalized_dist = 0.0;
+
+        particles.forEach(element => {
+            const dis = dist(
+                this.position.x,
+                this.position.y,
+                element.previous_point.x,
+                element.previous_point.y);
+
             if (dis < radius)
             {
                 // remap from [0,radius]->[0.0, 1.0] for alpha
-                // this can become more interesting if one assumes spatially varying
-                // density functions for radius
+                // this can become more interesting if one assumes spatially
+                // varying density functions for radius swapping the endpoints
+                // results in a attractor effect
                 const rmap = map(dis, 0, radius, 1.0, 0.0);
 
-                stroke(180, 255, 255, rmap);
-                strokeWeight(rmap * 4);
+                // some quick mapping for HSV, makes it more discernible
+                stroke(
+                    rmap * 100 + 135, 255 * rmap, (1 - rmap) * 220 + 35, rmap);
+                strokeWeight(rmap * 3);
 
-                line(this.position.x, this.position.y,
-                        element.previous_point.x, element.previous_point.y);
+                // a version with acceleration structures would perhaps be
+                // interesting and in this case, returning 4 points, allowing
+                // us to create bezier splines for the ondullating shapes.
+                line(
+                    this.position.x,
+                    this.position.y,
+                    element.previous_point.x,
+                    element.previous_point.y);
+
+                // store the distance to nearest particle and the [0,1] distance
+                // for other methods.
+                this.particle_dist   = dis;
+                this.normalized_dist = rmap;
             }
         });
+        strokeWeight(1.0);
+    }
+
+    agitate(level)
+    {
+        // this.max_speed = 20;
+        this.position.x += level * (random() * 2.0 - 1.0) * 10;
+        this.position.y += level * (random() * 2.0 - 1.0) * 10;
+        this.velocity.mult(level * 10);
+    }
+
+    sonorize(radius)
+    {
+        // affect only when particle bisects the screen
+        if (this.position.y > height / 2 + 1
+            || this.position.yy < height / 2 - 1)
+        {
+            return;
+        }
+
+        // Change the modulator for the FM synthesis based on the x values
+        // of the Y strip intersected particles.
+        modulator_amplitude = map(this.particle_dist, 0, radius, 0, 5000);
+        // modulator_amplitude = map(this.position.x, 0, width, 1, 5000);
+        modulator.amp(modulator_amplitude, 0.05);
+
+        modulator_frequency = map(this.position.x, 0, width, 1, 5000);
+        // modulator_frequency = map(this.particle_dist, 0, this.radius, 1,
+        // 5000);
+        modulator.freq(modulator_frequency, 0.01);
+        const xpan = constrain((this.position.x / width) * 2 - 0.9, -0.9, 0.9);
+        modulator.pan(xpan);
     }
 }
 
