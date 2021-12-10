@@ -1,4 +1,5 @@
 # generative-o-matic
 
-P5js, Processing and OpenFrameWorks sketches for SDI|MM
-
+Assortment of P5js, Processing and OpenFrameWorks sketches.
+Some artificial life simulations involving computer vision,
+particles, vector fields, besides generative audio.
