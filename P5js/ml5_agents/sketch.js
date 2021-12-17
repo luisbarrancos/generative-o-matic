@@ -36,7 +36,6 @@ let x_vec, y_vec;
 let particles = [];
 let flow_field;
 
-let cam;
 // avoid the hassle and set the color palette
 let orange;
 let midblu;
@@ -45,8 +44,11 @@ let grey;
 //
 // Adding bells & whistles and this is getting heavier.
 // Don't go above 250-350.
-const num_particles = 100;
+const num_particles = 50;
 const frame_rate    = 25;
+// particle flow field time step increment
+let delta_t = 0.01;
+let delta_z = 0.0;
 
 // QHD = 960x540
 const w = 800, h = 600;
@@ -113,29 +115,22 @@ function setup()
     colorMode(HSB);
 
     let canvas = createCanvas(w, h);
-    // fb = createGraphics(w, h);
-
-    // create a webcam with specific contraints and hide it
-    // minimize data stream
-    // https://w3c.github.io/mediacapture-main/getusermedia.html#media-track-constraints
-    // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getSupportedConstraints#Result
-    const constraints = {
-        video : {
-            width : {min : 640, ideal : min(w, 1280), max : 1280},
-            height : {min : 480, ideal : min(h, 720), max : 720},
-            frameRate : {min : 25, ideal : 25, max : 60},
-            aspectRatio : w / h,
-        },
-        audio : false
-    };
-    cam = createCapture(constraints);
-    cam.size(width, height);
-    cam.hide();
 
     // allocate storage for N particles
     for (let i = 0; i < num_particles; i++)
     {
-        particles[i] = new Particle();
+        // now we should split the number of particle types,
+        // predators, prey for now, add more later perhaps
+        // and assign them different positions in the screenp 
+        // Note: avoid p5js random() and use Math.random() directly to
+        // bypass the range checking.
+        //
+        const ptype = (i % 2 == 0) ? 0 : 1;
+
+        particles[i] = new Particle(
+            Math.random() * width,
+            Math.random() * height,
+            ptype);
     }
 
     // base number of steps, change acceleration. to aspect ratio
@@ -147,7 +142,11 @@ function setup()
     x_vec = floor(width / x_step);
     y_vec = floor(height / y_step);
 
-    background(midblu);
+    // initialize the flow field, once, the boids take over next
+    // FlowField();
+
+    //background(midblu);
+    //background(grey);
 
     frameRate(frame_rate);
     // noLoop();
@@ -155,18 +154,8 @@ function setup()
 
 function draw()
 {
-    // load webcam feed and flip horizontally
-    push();
-    translate(cam.width, 0);
-    scale(-1, 1);
-    image(cam, 0, 0, width, height);
-    pop();
-
-    // filter(POSTERIZE, 4); // invert, erode, dilate, blur, grey, posterize,
-    // threshold
-    loadPixels();
-    // clear it from view, or comment to debug the video feed
-    background(midblu);
+    //background(grey);
+    //blendMode(EXCLUSION);
 
     // AUDIO: get the mic feed
     const level = map(mic.getLevel(), 0.0, 0.5, 0.0, 1.0);
@@ -175,20 +164,27 @@ function draw()
     // initialize the flow field
     FlowField();
 
+    fill(0, 0, 0); // .05 alpha
+    stroke(0, 0, 0); // .05 alpha
+    strokeWeight(3);
+
     // search radius for particle connectors. Constant for now, but
     // a density function can also produce interesting results.
     const radius = 100.0;
 
     for (let k = 0; k < particles.length; k++)
     {
-        particles[k].show();
-        particles[k].update();
-        particles[k].edge();
+        //particles[k].show();
+        //particles[k].update();
+        //particles[k].edge();
         particles[k].follow(flow_field);
+        particles[k].run(particles)
+        particles[k].show()
+
 
         // check distance and connect, the distance will drive the sound
         // FM synthesis params.
-        particles[k].connect(particles.slice(k), radius);
+        //particles[k].connect(particles.slice(k), radius);
 
         // shake things a bit if mic goes above a threshold, a "refresh"
         // of sorts to randomize things a bit.
@@ -199,27 +195,23 @@ function draw()
 
         // comparing modulus of frame count vs time in a times array can
         // introduce a rythm (todo).
-        // if (int(frameCount % 25) == 0)
-        particles[k].sonorize(radius);
+        //if (int(frameCount % 25) == 0)
+        //{
+        //    particles[k].sonorize(radius);
+        //}
     }
-    // 2nd framebuffer object for trails
-    // image(fb, 0, 0);
-}
-
-// ITU-R BT.709 relative luminance Y
-function luminance(r, g, b)
-{
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
 function FlowField()
 {
     // create an array corresponding to the number of grid entries
     flow_field = new Array(x_vec * y_vec);
+    let delta_y = 0.0;
 
     // traverse each vertical and horizontal grid unit
     for (let y = 0; y < height; y += y_step)
     {
+        let delta_x = 0.0;
         for (let x = 0; x < width; x += x_step)
         {
             // for each grid position at which we calculate the optical flow
@@ -231,78 +223,20 @@ function FlowField()
             // tuple
             const i = (x + (y * width)) * 4;
 
-            // and get the R, G, B channels value
-            const r = pixels[i + 0];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-
-            // compute the relative luminance Y (from ITU-R BT.709 RGB primaries
-            //  D65 white point), CIE (1931) XYZ->RGB matrix
-            // DEBUG w random
-            const lum = map(luminance(r, g, b), 0, 255, 0, 1);
-            // const lum = random();
-
             // create an index for a linear 1D array from the horizontal
             // vertical grid unit counters
             const index = x_cell + (y_cell * x_vec);
-
-            // create a vector V0 corresponding to each grid unit/cell
-            const v0 = createVector(x_cell, y_cell);
-
-            // and another that rotates 2 PI radians based on the relative
-            // luminance Y this isn't really optical flow, but a crude
-            // approximation to interact with webcam pixel values. For proper
-            // optical flow one would need to compute the image gradient, which
-            // would imply two framebuffers, one for previous time t_(n-1) and
-            // another for present time t_n
-            //
-            // xcell * cos(2PI xi), xcell * sin(2PI xi)
-            const v1 = createVector(cos(lum * TWO_PI), sin(lum * TWO_PI));
-
-            // measure the angle between them in radians
-            const vecDirect = v0.angleBetween(v1);
+            const vecDirect = noise(delta_x, delta_y, delta_z) * 4 * TWO_PI;
+            delta_x += delta_t;
 
             // and create a new vector from this angle
             let dir = p5.Vector.fromAngle(vecDirect);
 
-            // if it stabilizes with no input (static feed), randomize a bit
-            if (dir.mag() < 0.1)
-            {
-                dir.add(createVector(noise(x), noise(y)));
-            }
-
-            // push the new vector into the array and set its magnitude
-            // NOTE: some magnitude randomization can be interesting, and
-            //       setting split components for dir x, y, z can also be
-            //       interesting.
             flow_field[index] = dir;
             dir.setMag(4);
-
-            // comment to simplify, debug, but notice the last two shapes
-            // are part of the 3d system
-
-            // Debug the "motion vectors" with hue mode nad lines
-            // HSB mode, change alpha
-            // stroke(lum * 255, 255, 255);
-
-            push();
-            translate(x, y);
-            rotate(dir.heading());
-            // line(0, 0, y_step, 0); // debug lines
-
-            // primary rotating squares
-            noStroke();
-            fill(0, 0, 40, 0.4);
-            rotate(frameCount * 0.03);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 5);
-
-            // secondary rotating squares
-            noFill()
-            stroke(0, 0, 255, 0.6);
-            rotate(frameCount * 0.05);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 7);
-            pop();
         }
+        delta_y += delta_t;
+        delta_z += delta_t * 0.01;
     }
     // Done with the main canvas/sketch
 }
@@ -314,17 +248,27 @@ function FlowField()
 
 class Particle
 {
-    constructor()
+    constructor(x, y, type)
     {
         // initialize to a random position on the canvas
-        this.x              = random(width);
-        this.y              = random(height);
+        this.x              = x;
+        this.y              = y;
         this.position       = createVector(this.x, this.y);
-        this.velocity       = createVector(0, 0); // dPdt
+        this.velocity       = createVector(10, 10); // dPdt
         this.acceleration   = createVector(0, 0); // dP^2/d^2t
-        this.r              = 2.0;
+
+        this.radius         = 50.0;
         this.max_speed      = 5;
+        this.max_steering   = 0.1;
         this.previous_point = this.position.copy();
+
+        // critter type
+        this.type = type
+
+        // control variables for flocking behaviour
+        this.separation_weight = 1.0;
+        this.alignment_weight = 1.0;
+        this.cohesion_weight = 1.0;
     }
 
     update()
@@ -335,10 +279,17 @@ class Particle
         this.velocity.limit(this.max_speed);
     }
 
-    updatePreviousPosition()
+    update_previous_position()
     {
         this.previous_point.x = this.position.x;
         this.previous_point.y = this.position.y;
+    }
+
+    run(boids, radius)
+    {
+        this.flock(boids, radius);
+        this.update();
+        this.edge();
     }
 
     follow(vectors)
@@ -346,11 +297,11 @@ class Particle
         const x = floor(this.position.x / x_step); // init at randomized x cell
         const y = floor(this.position.y / y_step); // init at randomized y cell
         const index = x + y * x_vec;               // linear 1d array indexing
-        const force = vectors[index]; // access the force computed earlier
-        this.applyForce(force);       // and apply it
+        const force = vectors[index];   // access the force computed earlier
+        this.apply_force(force);        // and apply it
     }
 
-    applyForce(force)
+    apply_force(force)
     {
         this.acceleration.add(force); // add jolt to acceleration
     }
@@ -358,48 +309,192 @@ class Particle
     show()
     {
         // display dots
-        fill(orange);
-        noStroke();
-        ellipse(this.position.x, this.position.y, 6, 6);
+        // const rdist = noise(this.position.x - this.position.y);
+        // fill(rdist * 50, rdist * 100, rdist * 100, 0.35);
+        // noStroke();
 
-        // and rotating squares
-        push();
+        const c = (this.type == 0) ?
+            color(10, 200, 150, 0.5) : color(60, 200, 150, 0.5);
 
-        noFill();
-        stroke(190, 90, 130, 10);
-        strokeWeight(0.5);
-        translate(this.position.x, this.position.y);
-        rotate(frameCount * this.previous_point.y * 0.0001);
-        square(0, 0, 16);
+        fill(c);
+        const time_freq = 0.0001;
+        const delta = this.radius * Math.sin(millis() * time_freq);
+        const eps = 0.1;
+        const wiggle = map(delta, -this.radius, this.radius, eps, 5);
 
-        pop();
-
-        this.updatePreviousPosition();
+        ellipse(this.position.x, this.position.y, wiggle, wiggle);
+        this.update_previous_position();
     }
 
     edge()
     {
         // restrict the particles to the canvas, check the edges
-        if (this.position.x < -this.r)
+        if (this.position.x < -this.radius)
         {
-            this.position.x = width + this.r;
-            this.updatePreviousPosition();
+            this.position.x = width + this.radius;
+            this.update_previous_position();
         }
-        if (this.position.y < -this.r)
+        if (this.position.y < -this.radius)
         {
-            this.position.y = height + this.r;
-            this.updatePreviousPosition();
+            this.position.y = height + this.radius;
+            this.update_previous_position();
         }
-        if (this.position.x > width + this.r)
+        if (this.position.x > width + this.radius)
         {
-            this.position.x = -this.r;
-            this.updatePreviousPosition();
+            this.position.x = -this.radius;
+            this.update_previous_position();
         }
-        if (this.position.y > height + this.r)
+        if (this.position.y > height + this.radius)
         {
-            this.position.y = -this.r;
-            this.updatePreviousPosition();
+            this.position.y = -this.radius;
+            this.update_previous_position();
         }
+    }
+
+    // Reynolds flocking behaviour control:
+    // separate, alignment, cohesion
+    separate(boids, radius)
+    {
+        let steer = createVector(0, 0);
+        let count = 0;
+
+        for (const other of boids)
+        {
+            const d = p5.Vector.dist(this.position, other.position);
+
+            if (0 < d && d < radius)
+            {
+                let direction = p5.Vector.sub(this.position, other.position);
+                direction.normalize().div(d);
+                steer.add(direction);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            steer.div(count);
+        }
+
+        if (0 < steer.mag())
+        {
+            steer.normalize();
+            steer.mult(this.max_speed);
+            steer.sub(this.velocity);
+            steer.limit(this.max_steering);
+        }
+        return steer;
+    }
+
+    align(boids, radius)
+    {
+        let sum = createVector(0, 0);
+        let count = 0;
+
+        for (const other of boids)
+        {
+            let distance = p5.Vector.dist(this.position, other.position);
+            if (0 < distance && distance < radius)
+            {
+                sum.add(other.velocity);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            sum.div(count);
+            sum.normalize();
+            sum.mult(this.max_speed);
+
+            let steer = p5.Vector.sub(sum, this.velocity);
+            steer.limit(this.max_steering);
+            return steer
+        }
+        return createVector(0, 0);
+    }
+
+    separate(boids, radius)
+    {
+        let steer = createVector(0, 0);
+        let count = 0;
+
+        for (const other of boids)
+        {
+            const d = p5.Vector.dist(this.position, other.position);
+
+            if (0 < d && d < radius)
+            {
+                let direction = p5.Vector.sub(this.position, other.position);
+                direction.normalize().div(d);
+                steer.add(direction);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            steer.div(count);
+        }
+
+        if (0 < steer.mag())
+        {
+            steer.normalize();
+            steer.mult(this.max_speed);
+            steer.sub(this.velocity);
+            steer.limit(this.max_steering);
+        }
+        return steer;
+    }
+
+    seek(target)
+    {
+        let desired = p5.Vector.sub(target, this.position);
+        desired.normalize().mult(this.max_speed);
+
+        let steer = p5.Vector.sub(desired, this.velocity);
+        steer.limit(this.max_steering);
+
+        return steer;
+    }
+
+    cohesion(boids, radius)
+    {
+        let sum = createVector(0, 0);
+        let count = 0;
+
+        for (const other of boids)
+        {
+            const distance = p5.Vector.dist(this.position, other.position);
+
+            if (0 < distance && distance < radius)
+            {
+                sum.add(other.position);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            sum.div(count);
+            return this.seek(sum);
+        }
+        return createVector(0, 0);
+    }
+
+    flock(boids, radius)
+    {
+        let separation = this.separate(boids, radius);
+        let alignment = this.align(boids, radius);
+        let cohesion = this.cohesion(boids, radius);
+
+        separation.mult(this.separation_weight);
+        alignment.mult(this.alignment_weight);
+        cohesion.mult(this.cohesion_weight);
+
+        this.apply_force(separation);
+        this.apply_force(alignment);
+        this.apply_force(cohesion);
     }
 
     // Search for neighbours within a given radius, the bigger the radius,
@@ -427,15 +522,6 @@ class Particle
                 // varying density functions for radius swapping the endpoints
                 // results in a attractor effect
                 const rmap = map(dis, 0, radius, 1.0, 0.0);
-
-                // some quick mapping for HSV, makes it more discernible
-                stroke(
-                    rmap * 100 + 135, 255 * rmap, (1 - rmap) * 220 + 35, rmap);
-                strokeWeight(rmap * 3);
-
-                // a version with acceleration structures would perhaps be
-                // interesting and in this case, returning 4 points, allowing
-                // us to create bezier splines for the ondullating shapes.
                 line(
                     this.position.x,
                     this.position.y,
@@ -448,7 +534,7 @@ class Particle
                 this.normalized_dist = rmap;
             }
         });
-        strokeWeight(1.0);
+        //strokeWeight(1.0);
     }
 
     agitate(level)
