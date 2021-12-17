@@ -44,7 +44,7 @@ let grey;
 //
 // Adding bells & whistles and this is getting heavier.
 // Don't go above 250-350.
-const num_particles = 250;
+const num_particles = 150;
 const frame_rate    = 25;
 // particle flow field time step increment
 let delta_t = 0.01;
@@ -70,6 +70,9 @@ let mic;
 let carrier, modulator;
 let modulator_frequency, modulator_amplitude;
 let reverb;
+
+// sliders for particle behaviour
+let slide_cohesion, slide_align, slide_separation;
 
 //
 // TODO: start splitting into functions for the AV capture, audio input
@@ -121,32 +124,34 @@ function setup()
     {
         // now we should split the number of particle types,
         // predators, prey for now, add more later perhaps
-        // and assign them different positions in the screenp 
+        // and assign them different positions in the screenp
         // Note: avoid p5js random() and use Math.random() directly to
         // bypass the range checking.
         //
         const ptype = (i % 2 == 0) ? 0 : 1;
 
-        particles[i] = new Particle(
-            Math.random() * width,
-            Math.random() * height,
-            ptype);
+        particles[i] =
+            new Particle(Math.random() * width, Math.random() * height, ptype);
     }
 
     // base number of steps, change acceleration. to aspect ratio
     const step = 20;
     x_step     = step;
-    y_step     = floor(step * height / width);
+    y_step     = Math.floor(step * height / width);
 
     // divide the canvas into aspect compensated cells
-    x_vec = floor(width / x_step);
-    y_vec = floor(height / y_step);
+    x_vec = Math.floor(width / x_step);
+    y_vec = Math.floor(height / y_step);
 
     // initialize the flow field, once, the boids take over next
-    // FlowField();
+    //FlowField();
 
-    //background(midblu);
-    //background(grey);
+    // background(midblu);
+    // background(grey);
+
+    slide_separation = createSlider(-15, 15.0, 1.0);
+    slide_cohesion = createSlider(-15, 15.0, 1.0);
+    slide_align = createSlider(-15, 15.0, 1.0);
 
     frameRate(frame_rate);
     // noLoop();
@@ -155,7 +160,7 @@ function setup()
 function draw()
 {
     background(grey);
-    //blendMode(EXCLUSION);
+    // blendMode(EXCLUSION);
 
     // AUDIO: get the mic feed
     const level = map(mic.getLevel(), 0.0, 0.5, 0.0, 1.0);
@@ -165,27 +170,30 @@ function draw()
     FlowField();
 
     fill(0, 0, 0); // .05 alpha
-    noStroke();
-    //stroke(0, 0, 0); // .05 alpha
-    //strokeWeight(3);
+    // noStroke();
+    stroke(0, 0, 0); // .05 alpha
+    // strokeWeight(3);
 
     // search radius for particle connectors. Constant for now, but
     // a density function can also produce interesting results.
-    const radius = 100.0;
+    const radius = 50.0;
 
     for (let k = 0; k < particles.length; k++)
     {
-        //particles[k].show();
-        //particles[k].update();
-        //particles[k].edge();
+        particles[k].separation_weight = slide_separation.value();
+        particles[k].alignment_weight = slide_align.value();
+        particles[k].cohesion_weight = slide_align.value();
+
+        // particles[k].show();
+        // particles[k].update();
+        // particles[k].edge();
         particles[k].follow(flow_field);
         particles[k].run(particles)
         particles[k].show()
 
-
         // check distance and connect, the distance will drive the sound
         // FM synthesis params.
-        //particles[k].connect(particles.slice(k), radius);
+        particles[k].connect(particles.slice(k), radius);
 
         // shake things a bit if mic goes above a threshold, a "refresh"
         // of sorts to randomize things a bit.
@@ -196,7 +204,7 @@ function draw()
 
         // comparing modulus of frame count vs time in a times array can
         // introduce a rythm (todo).
-        //if (int(frameCount % 25) == 0)
+        // if (int(frameCount % 25) == 0)
         //{
         //    particles[k].sonorize(radius);
         //}
@@ -206,7 +214,7 @@ function draw()
 function FlowField()
 {
     // create an array corresponding to the number of grid entries
-    flow_field = new Array(x_vec * y_vec);
+    flow_field  = new Array(x_vec * y_vec);
     let delta_y = 0.0;
 
     // traverse each vertical and horizontal grid unit
@@ -226,7 +234,7 @@ function FlowField()
 
             // create an index for a linear 1D array from the horizontal
             // vertical grid unit counters
-            const index = x_cell + (y_cell * x_vec);
+            const index     = x_cell + (y_cell * x_vec);
             const vecDirect = noise(delta_x, delta_y, delta_z) * 4 * TWO_PI;
             delta_x += delta_t;
 
@@ -252,11 +260,11 @@ class Particle
     constructor(x, y, type)
     {
         // initialize to a random position on the canvas
-        this.x              = x;
-        this.y              = y;
-        this.position       = createVector(this.x, this.y);
-        this.velocity       = createVector(10, 10); // dPdt
-        this.acceleration   = createVector(0, 0); // dP^2/d^2t
+        this.x            = x;
+        this.y            = y;
+        this.position     = createVector(this.x, this.y);
+        this.velocity     = createVector(10, 10); // dPdt
+        this.acceleration = createVector(0, 0);   // dP^2/d^2t
 
         this.radius         = 50.0;
         this.max_speed      = 5;
@@ -268,8 +276,8 @@ class Particle
 
         // control variables for flocking behaviour
         this.separation_weight = 1.0;
-        this.alignment_weight = 1.0;
-        this.cohesion_weight = 1.0;
+        this.alignment_weight  = 1.0;
+        this.cohesion_weight   = 1.0;
     }
 
     update()
@@ -295,11 +303,13 @@ class Particle
 
     follow(vectors)
     {
-        const x = floor(this.position.x / x_step); // init at randomized x cell
-        const y = floor(this.position.y / y_step); // init at randomized y cell
-        const index = x + y * x_vec;               // linear 1d array indexing
-        const force = vectors[index];   // access the force computed earlier
-        this.apply_force(force);        // and apply it
+        const x =
+            Math.floor(this.position.x / x_step); // init at randomized x cell
+        const y =
+            Math.floor(this.position.y / y_step); // init at randomized y cell
+        const index = x + y * x_vec;              // linear 1d array indexing
+        const force = vectors[index]; // access the force computed earlier
+        this.apply_force(force);      // and apply it
     }
 
     apply_force(force)
@@ -314,14 +324,14 @@ class Particle
         // fill(rdist * 50, rdist * 100, rdist * 100, 0.35);
         // noStroke();
 
-        const c = (this.type == 0) ?
-            color(10, 200, 150, 0.5) : color(60, 200, 150, 0.5);
+        const c = (this.type == 0) ? color(10, 200, 150, 0.5)
+                                   : color(60, 200, 150, 0.5);
 
         fill(c);
         const time_freq = 0.0001;
-        const delta = this.radius * Math.sin(millis() * time_freq);
-        const eps = 0.1;
-        const wiggle = map(delta, -this.radius, this.radius, eps, 5);
+        const delta     = this.radius * Math.sin(millis() * time_freq);
+        const eps       = 0.1;
+        const wiggle    = map(delta, -this.radius, this.radius, eps, 5);
 
         ellipse(this.position.x, this.position.y, wiggle, wiggle);
         this.update_previous_position();
@@ -363,7 +373,7 @@ class Particle
         {
             const d = p5.Vector.dist(this.position, other.position);
 
-            if (0 < d && d < radius)
+            if (0 < d && d < radius * 0.5)
             {
                 let direction = p5.Vector.sub(this.position, other.position);
                 direction.normalize().div(d);
@@ -389,7 +399,7 @@ class Particle
 
     align(boids, radius)
     {
-        let sum = createVector(0, 0);
+        let sum   = createVector(0, 0);
         let count = 0;
 
         for (const other of boids)
@@ -415,39 +425,6 @@ class Particle
         return createVector(0, 0);
     }
 
-    separate(boids, radius)
-    {
-        let steer = createVector(0, 0);
-        let count = 0;
-
-        for (const other of boids)
-        {
-            const d = p5.Vector.dist(this.position, other.position);
-
-            if (0 < d && d < radius)
-            {
-                let direction = p5.Vector.sub(this.position, other.position);
-                direction.normalize().div(d);
-                steer.add(direction);
-                count++;
-            }
-        }
-
-        if (count > 0)
-        {
-            steer.div(count);
-        }
-
-        if (0 < steer.mag())
-        {
-            steer.normalize();
-            steer.mult(this.max_speed);
-            steer.sub(this.velocity);
-            steer.limit(this.max_steering);
-        }
-        return steer;
-    }
-
     seek(target)
     {
         let desired = p5.Vector.sub(target, this.position);
@@ -461,7 +438,7 @@ class Particle
 
     cohesion(boids, radius)
     {
-        let sum = createVector(0, 0);
+        let sum   = createVector(0, 0);
         let count = 0;
 
         for (const other of boids)
@@ -486,8 +463,8 @@ class Particle
     flock(boids, radius)
     {
         let separation = this.separate(boids, radius);
-        let alignment = this.align(boids, radius);
-        let cohesion = this.cohesion(boids, radius);
+        let alignment  = this.align(boids, radius);
+        let cohesion   = this.cohesion(boids, radius);
 
         separation.mult(this.separation_weight);
         alignment.mult(this.alignment_weight);
@@ -535,14 +512,14 @@ class Particle
                 this.normalized_dist = rmap;
             }
         });
-        //strokeWeight(1.0);
+        // strokeWeight(1.0);
     }
 
     agitate(level)
     {
         // this.max_speed = 20;
-        this.position.x += level * (random() * 2.0 - 1.0) * 10;
-        this.position.y += level * (random() * 2.0 - 1.0) * 10;
+        this.position.x += level * (Math.random() * 2.0 - 1.0) * 10;
+        this.position.y += level * (Math.random() * 2.0 - 1.0) * 10;
         this.velocity.mult(level * 10);
     }
 
