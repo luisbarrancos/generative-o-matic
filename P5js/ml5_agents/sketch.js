@@ -44,7 +44,7 @@ let grey;
 //
 // Adding bells & whistles and this is getting heavier.
 // Don't go above 250-350.
-const num_particles = 50;
+const num_particles = 250;
 const frame_rate    = 25;
 // particle flow field time step increment
 let delta_t = 0.01;
@@ -154,7 +154,7 @@ function setup()
 
 function draw()
 {
-    //background(grey);
+    background(grey);
     //blendMode(EXCLUSION);
 
     // AUDIO: get the mic feed
@@ -165,8 +165,9 @@ function draw()
     FlowField();
 
     fill(0, 0, 0); // .05 alpha
-    stroke(0, 0, 0); // .05 alpha
-    strokeWeight(3);
+    noStroke();
+    //stroke(0, 0, 0); // .05 alpha
+    //strokeWeight(3);
 
     // search radius for particle connectors. Constant for now, but
     // a density function can also produce interesting results.
