@@ -26,7 +26,7 @@ function setup()
     createCanvas(1280, 720);
     pixelDensity(1);
     background(0);
-    frameRate(60);
+    frameRate(25);
 
     cols = floor(width / scl);
     rows = floor(height / scl);
