@@ -5,11 +5,9 @@ Array.prototype.random =
     return this[Math.floor((Math.random() * this.length))];
 }
 
-const square = x => x * x;
-
 let p      = [];
 const edge = 350;
-
+const square = x => x * x;
 const dir = [
     [ 1, 0, 0 ],
     [ -1, 0, 0 ],
@@ -18,6 +16,7 @@ const dir = [
     [ 0, 0, 1 ],
     [ 0, 0, -1 ]
 ];
+const debug_speech = new p5.Speech("Google UK English Male"); // speech synthesis object
 
 function setup()
 {
@@ -26,8 +25,11 @@ function setup()
     colorMode(HSB);
     frameRate(25);
     background(0);
+}
 
-
+function mousePressed()
+{
+    debug_speech.speak("Debugging p5 speech.");
 }
 
 function initArray()
@@ -55,8 +57,7 @@ function initArray()
 
 function draw()
 {
-    var foo = new p5.Speech(); // speech synthesis object
-    foo.speak("hi there"); // say something
+    /*
     const f = frameCount;
 
     if (f % ((edge + 1) * 2) == 1)
@@ -154,4 +155,5 @@ function draw()
 
         pop();
     }
+    */
 }
