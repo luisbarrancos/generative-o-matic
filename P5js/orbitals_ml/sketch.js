@@ -5,6 +5,8 @@ Array.prototype.random =
     return this[Math.floor((Math.random() * this.length))];
 }
 
+const square = x => x * x;
+
 let p      = [];
 const edge = 350;
 
@@ -24,6 +26,8 @@ function setup()
     colorMode(HSB);
     frameRate(25);
     background(0);
+
+
 }
 
 function initArray()
@@ -51,6 +55,8 @@ function initArray()
 
 function draw()
 {
+    var foo = new p5.Speech(); // speech synthesis object
+    foo.speak("hi there"); // say something
     const f = frameCount;
 
     if (f % ((edge + 1) * 2) == 1)
@@ -91,8 +97,9 @@ function draw()
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
-
-            if ((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2 < 1500)
+            // Math.hypot() is slow. Math.pow() as well. The exponentiantion as well,
+            // so use a x*x lambda since we're in a nested loop
+            if(square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
             {
                 stroke(Palette.colors(i, 1, 50));
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
@@ -113,14 +120,12 @@ function draw()
             push()
             translate(a.x, a.y, a.z)
 
-            push()
             translate(mcx * 8, mcy * 8, mcz * 8);
             rotateZ(a.z * rotangle);
             rotateY(a.y * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.2);
             box(15);
-            pop();
 
             pop();
         }
@@ -129,14 +134,12 @@ function draw()
             push()
             translate(a.x, a.y, a.z)
 
-            push()
             translate(msx * 11, msy * 11, msz * 11);
             rotateZ(a.z * rotangle);
             rotateX(a.x * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.1);
             sphere(a.z * 0.05, 5, 5);
-            pop();
 
             pop();
         }
@@ -144,12 +147,10 @@ function draw()
         push()
         translate(a.x, a.y, a.z)
 
-        push()
         translate(mcz * 12, msx * 13, mcy * 11);
         stroke(Palette.colors(i, 5, 70));
         strokeWeight(0.1);
         sphere(a.y * 0.02, 3, 3);
-        pop();
 
         pop();
     }
