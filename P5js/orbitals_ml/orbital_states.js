@@ -6,6 +6,7 @@ class OrbitalState
     #max_translation = 1.0;
     #max_scale = 1.0;
     #max_jittering = 2.0;
+    #edge = 350;
 
     // sum and multiply 2 arrays element by element
     #sum = (a, b) => a.map((c, i) => c + b[i]);
@@ -50,6 +51,8 @@ class OrbitalState
         this.#max_jittering = 2.0;
         this.jittering = 0.0;
         this.mood = 0.0;
+        //
+        this.#edge = 350;
     }
 
     update()
@@ -96,6 +99,27 @@ class OrbitalState
             this.translate_y, -this.#max_translation, this.#max_translation);
         this.translate_z = constrain(
             this.translate_z, -this.#max_translation, this.#max_translation);
+    }
+
+    edge()
+    {
+        this.x += this.vx * 2;
+        if (Math.abs(this.x) > this.#edge)
+        {
+            this.vx *= -1;
+        }
+
+        this.y += this.vy * 2;
+        if (Math.abs(this.y) > this.#edge)
+        {
+            this.vy *= -1;
+        }
+
+        this.z += this.vz * 2;
+        if (Math.abs(this.z) > this.#edge)
+        {
+            this.vz *= -1;
+        }
     }
 
     apply_mood(mood)
