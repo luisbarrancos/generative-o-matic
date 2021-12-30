@@ -57,8 +57,8 @@ function initArray()
 
 function draw()
 {
-    /*
     const f = frameCount;
+    let speed_factor = 1.0; // this will change with input voice
 
     if (f % ((edge + 1) * 2) == 1)
     {
@@ -155,5 +155,4 @@ function draw()
 
         pop();
     }
-    */
 }

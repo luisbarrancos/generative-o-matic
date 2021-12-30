@@ -5,7 +5,7 @@ class Palette
     // 3. add a comment to keep track of the training states
 
     static #color_tables = [
-        // initialize
+        // start
         "083d77,ebebd3,f4d35e,ee964b,f95738",
         // shake
         "fdffff,b10f2e,570000,280000,de7c5a",
