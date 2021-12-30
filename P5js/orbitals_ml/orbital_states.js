@@ -1,15 +1,35 @@
 class OrbitalState 
 {
-    constructor()
+    #maxspeed = 2.0;
+    #speed_factor = 0.0;
+    #max_rotation = TWO_PI;
+    #max_translation = 1.0;
+    #max_scale = 1.0;
+    #max_jittering = 2.0;
+
+    // sum and multiply 2 arrays element by element
+    #sum = (a, b) => a.map((c, i) => c + b[i]);
+    #sub = (a, b) => a.map((c, i) => c - b[i]);
+    #mul = (a, b) => a.map((c, i) => c * b[i]);
+    // multiply elements of array by scalar
+    #smul = (arr, x) => arr.map((a) => a * x)
+
+    constructor(x, y, z, vx, vy, vz)
     {
         // these should be private, their only control is to be provided
         // via the states or debug methods.
         //
         this.#maxspeed = 2.0;
         this.#speed_factor = 0.0;
-        this.position = 0.0;
-        this.velocity = 0.0;
-        this.acceleration = 1.0;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.position = [this.x, this.y, this.z];
+        this.vx = vx;
+        this.vy = vy;
+        this.vz = vz;
+        this.velocity = [this.vx, this.vy, this.vz];
+        this.acceleration = [1.0, 1.0, 1.0];
         //
         this.angle = this.#speed_factor * TWO_PI * 0.001;
         this.#max_rotation = TWO_PI;
@@ -35,9 +55,15 @@ class OrbitalState
     update()
     {
         // incremente speed w acceleration/jolt, then reset acceleration.
-        this.position += this.velocity;
-        this.velocity += this.acceleration;
-        this.acceleration *= 0.0;
+        // this.position += this.velocity;
+        this.#sum(this.position, this.velocity);
+
+        //this.velocity += this.acceleration;
+        this.#sum(this.velocity, this.acceleration);
+
+        //this.acceleration *= 0.0;
+        this.#smul(this.acceleration, 0.0);
+
         this.velocity = constrain(
             this.velocity, -this.#maxspeed, this.#maxspeed);
         //
@@ -88,7 +114,7 @@ class OrbitalState
     // states, teachable AI
     start()
     {
-        this.apply_force(1.0); // start motion only
+        this.#sum(this.acceleration, [1, 1, 1]);
     }
 
     shake(jitter)
@@ -128,17 +154,20 @@ class OrbitalState
 
     faster(force)
     {
-        this.acceleration += force; // assuming force >=0
+        this.#sum(this.acceleration, [force, force, force]);
+        //this.acceleration += force; // assuming force >=0
     }
 
     slower(force)
     {
-        this.acceleration -= force; // assuming force >=0
+        this.#sub(this.acceleration, [force, force, force]);
+        //this.acceleration -= force; // assuming force >=0
     }
     
     stop()
     {
-        this.acceleration -= 0.025; // should give a gradual stop
+        this.#sub(this.acceleration, [0.025, 0.025, 0.025]);
+        //this.acceleration -= 0.025; // should give a gradual stop
     }
     //
     // sentiment could control angle

@@ -5,7 +5,8 @@ Array.prototype.random =
     return this[Math.floor((Math.random() * this.length))];
 }
 
-let p      = [];
+let p = [];
+let p2 = [];
 const edge = 350;
 const square = x => x * x;
 const dir = [
@@ -16,25 +17,33 @@ const dir = [
     [ 0, 0, 1 ],
     [ 0, 0, -1 ]
 ];
-const debug_speech = new p5.Speech("Google UK English Male"); // speech synthesis object
 
-function setup()
-{
-    p5.disableFriendlyErrors = true;
-    createCanvas(width = 1280, height = 720, WEBGL);
-    colorMode(HSB);
-    frameRate(25);
-    background(0);
-}
+// sum and multiply 2 arrays element by element
+const sum = (a, b) => a.map((c, i) => c + b[i]);
+const sub = (a, b) => a.map((c, i) => c - b[i]);
+const mul = (a, b) => a.map((c, i) => c * b[i]);
+// multiply elements of array by scalar
+const smul = (arr, x) => arr.map((a) => a * x)
 
-function mousePressed()
+// TeachableAI setup
+// Global variable to store the classifier
+let classifier;
+
+// Label
+let label = "listening...";
+  
+// Teachable Machine model URL:
+const soundModel = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/"; 
+
+function preload()
 {
-    debug_speech.speak("Debugging p5 speech.");
+    // Load the model
+    classifier = ml5.soundClassifier(soundModel + "model.json");
 }
 
 function initArray()
 {
-    p.length = 0;
+    p2.length = 0;
     for (let x = -4; x <= 4; x++)
     {
         for (let y = -4; y <= 4; y++)
@@ -42,7 +51,7 @@ function initArray()
             for (let z = -4; z <= 4; z++)
             {
                 const [vx, vy, vz] = dir.random();
-                p.push({
+                p2.push({
                     x : x * 40, // 35
                     y : y * 40, // 35
                     z : z * 40, // 35
@@ -55,14 +64,63 @@ function initArray()
     }
 }
 
+function initObject()
+{
+    p.length = 0;
+    for (let x = -4; x <= 4; x++)
+    {
+        for (let y = -4; y <= 4; y++)
+        {
+            for (let z = -4; z <= 4; z++)
+            {
+                const [vx, vy, vz] = dir.random();
+                let obj = new OrbitalState(x * 40, y * 40, z * 40, vx, vy, vz);
+                p.push(obj);
+            }
+        }
+    }
+}
+
+function setup()
+{
+    p5.disableFriendlyErrors = true;
+    createCanvas(width = 1280, height = 720, WEBGL);
+    colorMode(HSB);
+    frameRate(25);
+    background(0);
+    // Start classifying
+    // The sound model will continuously listen to the microphone
+    classifier.classify(gotResult);
+    //initObject();
+}
+
+// The model recognizing a sound will trigger this event
+function gotResult(error, results)
+{
+    if (error)
+    {
+        console.error(error);
+        return;
+    }
+    // The results are in an array ordered by confidence.
+    // console.log(results[0]);
+    label = results[0].label;
+}
+
 function draw()
 {
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    fill(255);
+    text(label, width / 2, height / 2);
+
     const f = frameCount;
     let speed_factor = 1.0; // this will change with input voice
 
     if (f % ((edge + 1) * 2) == 1)
     {
-        initArray();
+        //initArray();
+        initObject();
     }
     rotateX(f / 61);
     rotateZ(f / 59);
@@ -71,10 +129,11 @@ function draw()
     const rotangle = tdelta * 0.0005;
 
     background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
-    noFill();
+    noFill();  
 
     for (let i = 0; i < p.length - 1; i++)
     {
+        //console.log(p[i]);
         let a = p[i];
 
         a.x += a.vx * 2;
@@ -118,41 +177,41 @@ function draw()
 
         if (i % 2 == 0)
         {
-            push()
-            translate(a.x, a.y, a.z)
-
+            push();
+            translate(a.x, a.y, a.z);
+            //push();
             translate(mcx * 8, mcy * 8, mcz * 8);
             rotateZ(a.z * rotangle);
             rotateY(a.y * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.2);
             box(15);
-
+            //pop();
             pop();
         }
         else
         {
-            push()
-            translate(a.x, a.y, a.z)
-
+            push();
+            translate(a.x, a.y, a.z);
+            //push();
             translate(msx * 11, msy * 11, msz * 11);
             rotateZ(a.z * rotangle);
             rotateX(a.x * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.1);
             sphere(a.z * 0.05, 5, 5);
-
+            //pop();
             pop();
         }
 
-        push()
-        translate(a.x, a.y, a.z)
-
+        push();
+        translate(a.x, a.y, a.z);
+        //push();
         translate(mcz * 12, msx * 13, mcy * 11);
         stroke(Palette.colors(i, 5, 70));
         strokeWeight(0.1);
         sphere(a.y * 0.02, 3, 3);
-
+        //pop();
         pop();
     }
 }
