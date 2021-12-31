@@ -110,42 +110,49 @@ function gotResult(error, results)
 
 function labelActions(a)
 {
+    /*
     if (label === "Start")
     {
-        a.start();
-    }
+       /a.start();
+    
     if (label === "Shake")
     {
         a.shake(2.0); // jitter
     }
+    */
+
+    
     if (label === "Wider")
     {
-        a.wider(2, 2, 2);
+        a.wider();
     }
     if (label === "Closer")
     {
-        a.closer(3, 3, 3);
+        a.closer();
     }
     if (label === "Bigger")
     {
-        a.bigger(1, 1, 1);
+        a.bigger();
     }
     if (label === "Smaller")
     {
-        a.smaller(1, 1, 1);
+        a.smaller();
     }
     if (label === "Faster")
     {
-        a.faster(1);
+        a.faster();
     }
     if (label === "Slower")
     {
-        a.slower(1);
+        a.slower();
     }
+
+    /*
     if (label === "Stop")
     {
         a.stop();
     }
+    */
 }
 
 function draw()
@@ -179,8 +186,11 @@ function draw()
         //console.log(p[i]);
         let a = p[i];
 
+        labelActions(a);
         a.edge();
+        a.update();
 
+        /*
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
@@ -190,32 +200,35 @@ function draw()
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
-
+        */
+        
+        // amplitude * cos(frequency * x + offset);
 
         const axdelta = a.x + tdelta;
         const aydelta = a.y + tdelta;
         const azdelta = a.z + tdelta;
-        const mcx     = Math.cos(axdelta);
-        const mcy     = Math.cos(aydelta);
-        const mcz     = Math.cos(azdelta);
-        const msx     = Math.sin(axdelta);
-        const msy     = Math.sin(aydelta);
-        const msz     = Math.sin(azdelta);
+        const mcx     = a.amplitude * Math.cos(a.frequency * axdelta);
+        const mcy     = a.amplitude * Math.cos(a.frequency * aydelta);
+        const mcz     = a.amplitude * Math.cos(a.frequency * azdelta);
+        const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
+        const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
+        const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
 
         if (i % 2 == 0)
         {
             push();
             translate(a.x, a.y, a.z);
             //push();
-            translate(mcx * 8, mcy * 8, mcz * 8);
-            rotateZ(a.z * rotangle);
-            rotateY(a.y * rotangle);
+            translate(mcx, mcy, mcz);
+            rotateZ(a.z * a.frequency * rotangle);
+            rotateY(a.y * a.frequency * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.2);
-            box(15);
+            box(a.size);
             //pop();
             pop();
         }
+        /*
         else
         {
             push();
@@ -230,6 +243,7 @@ function draw()
             //pop();
             pop();
         }
+        */
 
         push();
         translate(a.x, a.y, a.z);
@@ -240,5 +254,6 @@ function draw()
         sphere(a.y * 0.02, 3, 3);
         //pop();
         pop();
+        
     }
 }

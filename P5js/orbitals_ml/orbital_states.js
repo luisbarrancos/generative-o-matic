@@ -1,6 +1,6 @@
 class OrbitalState 
 {
-    #maxspeed = 2.0;
+    #maxspeed = 22.0;
     #speed_factor = 0.0;
     #max_rotation = TWO_PI;
     #max_translation = 1.0;
@@ -8,19 +8,30 @@ class OrbitalState
     #max_jittering = 2.0;
     #edge = 350;
 
+    amplitude = 1.0;
+    amplitude_flag = 1;
+    frequency = 1.0;
+    frequency_flag = 1;
+    offset = 0.0;
+    offset_flag = 1;
+    size = 8.0;
+    size_flag = 1;
+
     // sum and multiply 2 arrays element by element
+    /*
     #sum = (a, b) => a.map((c, i) => c + b[i]);
     #sub = (a, b) => a.map((c, i) => c - b[i]);
     #mul = (a, b) => a.map((c, i) => c * b[i]);
     // multiply elements of array by scalar
     #smul = (arr, x) => arr.map((a) => a * x)
+    */
 
     constructor(x, y, z, vx, vy, vz)
     {
         // these should be private, their only control is to be provided
         // via the states or debug methods.
         //
-        this.#maxspeed = 2.0;
+        this.#maxspeed = 1.0;
         this.#speed_factor = 0.0;
         this.x = x;
         this.y = y;
@@ -29,8 +40,10 @@ class OrbitalState
         this.vx = vx;
         this.vy = vy;
         this.vz = vz;
-        this.velocity = [this.vx, this.vy, this.vz];
-        this.acceleration = [1.0, 1.0, 1.0];
+        //this.velocity = [this.vx, this.vy, this.vz];
+        this.velocity = 1.0;
+        
+        this.acceleration = 0.025;
         //
         this.angle = this.#speed_factor * TWO_PI * 0.001;
         this.#max_rotation = TWO_PI;
@@ -38,7 +51,7 @@ class OrbitalState
         this.rotate_y = 1.0 / 59;
         this.rotate_z = 0.0;
         //
-        this.#max_translation = 1.0;
+        this.#max_translation = 25.0;
         this.translate_x = 0.01;
         this.translate_y = 0.01;
         this.translate_z = 0.01;
@@ -53,24 +66,42 @@ class OrbitalState
         this.mood = 0.0;
         //
         this.#edge = 350;
+
+        this.amplitude = 1.0;
+        this.amplitude_flag = 1;
+        this.frequency = 1.0;
+        this.frequency_flag = 1;
+        this.offset = 0.0;
+        this.offset_flag = 1;
+        this.size = 8.0;
+        this.size_flag = 1;
     }
 
     update()
     {
         // incremente speed w acceleration/jolt, then reset acceleration.
         // this.position += this.velocity;
-        this.#sum(this.position, this.velocity);
+        //this.#sum(this.position, this.velocity);
+        //this.velocity += this.acceleration;
+        //this.#sum(this.velocity, this.acceleration);
+        //this.acceleration *= 0.0;
+        //this.#smul(this.acceleration, 0.0);
+        /*
+        this.vx = constrain(this.vx + this.acceleration, 0, this.#maxspeed);
+        this.vy = constrain(this.vy + this.acceleration, 0, this.#maxspeed);
+        this.vz = constrain(this.vz + this.acceleration, 0, this.#maxspeed);
+        this.acceleration = 0;
 
         //this.velocity += this.acceleration;
-        this.#sum(this.velocity, this.acceleration);
-
-        //this.acceleration *= 0.0;
-        this.#smul(this.acceleration, 0.0);
-
         this.velocity = constrain(
-            this.velocity, -this.#maxspeed, this.#maxspeed);
+            this.velocity, 0, this.#maxspeed);
+        //this.acceleration = 0;
+        */
+
         //
         // slowly reduce the jittering. One can jolt it though
+
+        /*
         if (this.jittering > 0.01)
         {
             this.jittering -= 0.01;
@@ -94,11 +125,41 @@ class OrbitalState
 
         // translation finally
         this.translate_x = constrain(
+            this.translate_x + this.x + this.velocity,
+            -this.#max_translation, this.#max_translation);
+        this.translate_y = constrain(
+            this.translate_y + this.y + this.velocity,
+            -this.#max_translation, this.#max_translation);
+        this.translate_z = constrain(
+            this.translate_z + this.z + this.velocity,
+            -this.#max_translation, this.#max_translation);*/
+            /*
+        this.translate_x = constrain(
             this.translate_x, -this.#max_translation, this.#max_translation);
         this.translate_y = constrain(
             this.translate_y, -this.#max_translation, this.#max_translation);
         this.translate_z = constrain(
             this.translate_z, -this.#max_translation, this.#max_translation);
+            */
+        this.velocity += this.acceleration;
+        //this.frequency = constrain(this.frequency + this.velocity, 0, 32);
+        this.acceleration = 0;
+    
+        // faster, slower
+        if (this.frequency_flag == 1)
+            this.frequency = constrain(this.frequency + 0.5, 0, 32)
+        if (this.frequency_flag == -1)
+            this.frequency = constrain(this.frequency - 0.5, 0, 32);
+        // wider, closer
+        if (this.amplitude_flag == 1)
+            this.amplitude = constrain(this.amplitude + 0.1, 0, 2);
+        if (this.amplitude_flag == -1)
+            this.amplitude = constrain(this.amplitude - 0.1, 0, 2);
+        // bigger, smaller
+        if (this.size_flag == 1)
+            this.size = constrain(this.size + 0.1, 2.0, 32);
+        if (this.size_flag == -1)
+            this.size = constrain(this.size - 0.1, 2.0, 32);
     }
 
     edge()
@@ -138,7 +199,7 @@ class OrbitalState
     // states, teachable AI
     start()
     {
-        this.#sum(this.acceleration, [1, 1, 1]);
+        //this.acceleration = 0.025;
     }
 
     shake(jitter)
@@ -148,50 +209,41 @@ class OrbitalState
         this.jittering += jitter;
     }
 
-    wider(x, y, z)
+    wider()
     {
-        this.translate_x += x;
-        this.translate_y += y;
-        this.translate_z += z;
+        this.amplitude_flag = 1;
     }
 
-    closer(x, y, z)
+    closer()
     {
-        this.translate_x -= x;
-        this.translate_y -= y;
-        this.translate_z -= z;
+        this.amplitude_flag = -1;
     }
 
-    bigger(x, y, z)
+    bigger()
     {
-        this.scale_x += x;
-        this.scale_y += y;
-        this.scale_z += z;
+        this.size_flag = 1;
     }
 
-    smaller(x, y, z)
+    smaller()
     {
-        this.scale_x -= x;
-        this.scale_y -= y;
-        this.scale_z -= z;
+        this.size_flag = -1;
     }
 
-    faster(force)
+    faster()
     {
-        this.#sum(this.acceleration, [force, force, force]);
-        //this.acceleration += force; // assuming force >=0
+        this.frequency_flag = 1;
+
     }
 
-    slower(force)
+    slower()
     {
-        this.#sub(this.acceleration, [force, force, force]);
-        //this.acceleration -= force; // assuming force >=0
+        this.frequency_flag = -1;
     }
     
     stop()
     {
-        this.#sub(this.acceleration, [0.025, 0.025, 0.025]);
-        //this.acceleration -= 0.025; // should give a gradual stop
+        // add to vx, vy, vz, update, reset in update()
+        //this.acceleration = -0.025;
     }
     //
     // sentiment could control angle
