@@ -6,8 +6,8 @@ Array.prototype.random =
 }
 
 let p = [];
-let p2 = [];
 const edge = 350;
+const frame_rate = 25;
 const dir = [
     [ 1, 0, 0 ],
     [ -1, 0, 0 ],
@@ -16,6 +16,10 @@ const dir = [
     [ 0, 0, 1 ],
     [ 0, 0, -1 ]
 ];
+
+let rotate_x = false;
+let rotate_y = false;
+let rotate_z = false;
 
 // Math.pow is slower, and Math.hypot is incredbly slow
 const square = x => x * x;
@@ -34,35 +38,13 @@ let classifier;
 let label = "listening...";
   
 // Teachable Machine model URL:
-const soundModel = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/"; 
+const sound_model = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/"; 
+const ml_options = { probabilityThreshold: 0.8 };
 
 function preload()
 {
     // Load the model
-    classifier = ml5.soundClassifier(soundModel + "model.json");
-}
-
-function initArray()
-{
-    p2.length = 0;
-    for (let x = -4; x <= 4; x++)
-    {
-        for (let y = -4; y <= 4; y++)
-        {
-            for (let z = -4; z <= 4; z++)
-            {
-                const [vx, vy, vz] = dir.random();
-                p2.push({
-                    x : x * 40, // 35
-                    y : y * 40, // 35
-                    z : z * 40, // 35
-                    vx : vx,
-                    vy : vy,
-                    vz : vz
-                });
-            }
-        }
-    }
+    classifier = ml5.soundClassifier(sound_model + "model.json", ml_options);
 }
 
 function initObject()
@@ -87,7 +69,7 @@ function setup()
     p5.disableFriendlyErrors = true;
     createCanvas(width = 1280, height = 720, WEBGL);
     colorMode(HSB);
-    frameRate(25);
+    frameRate(frame_rate);
     background(0);
     // Start classifying
     // The sound model will continuously listen to the microphone
@@ -114,10 +96,6 @@ function labelActions(a)
     if (label === "Start")
     {
        /a.start();
-    
-    if (label === "Shake")
-    {
-        a.shake(2.0); // jitter
     }
     */
     if (label === "Wider")
@@ -152,6 +130,28 @@ function labelActions(a)
     */
 }
 
+function rotate_screen(f)
+{
+    if (label == "Rotate X")
+        rotate_x = true;
+    if (label == "Rotate Y")
+        rotate_y = true;
+    if (label == "Rotate Z")
+        rotate_z = true;
+    if (label == "Stop")
+    {
+        rotate_x = false;
+        rotate_y = false;
+        rotate_z = false;
+    }
+    if (rotate_x == true)
+        rotateX(f / 23);
+    if (rotate_y == true)
+        rotateY(f / 47);
+    if (rotate_z == true)
+        rotateZ(f / 31);
+}
+
 function draw()
 {
     textSize(32);
@@ -169,9 +169,8 @@ function draw()
         initObject();
     }
     */
-    rotateX(f / 61);
-    rotateZ(f / 59);
-
+    rotate_screen(f);
+    
     const tdelta   = TWO_PI * f * 0.1;
     const rotangle = tdelta * 0.0005;
 
@@ -180,14 +179,12 @@ function draw()
 
     for (let i = 0; i < p.length - 1; i++)
     {
-        //console.log(p[i]);
         let a = p[i];
 
         labelActions(a);
         a.edge();
         a.update();
 
-        /*
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
@@ -197,9 +194,6 @@ function draw()
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
-        */
-        
-        // amplitude * cos(frequency * x + offset);
 
         const axdelta = a.x + tdelta;
         const aydelta = a.y + tdelta;
@@ -210,46 +204,40 @@ function draw()
         const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
         const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
         const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
-
+        
         if (i % 2 == 0)
         {
             push();
             translate(a.x, a.y, a.z);
-            //push();
             translate(mcx, mcy, mcz);
             rotateZ(a.z * a.frequency * rotangle);
             rotateY(a.y * a.frequency * rotangle);
             stroke(Palette.colors(i, 4, 60));
             strokeWeight(0.2);
             box(a.size);
-            //pop();
             pop();
         }
-        /*
         else
         {
             push();
             translate(a.x, a.y, a.z);
-            //push();
-            translate(msx * 11, msy * 11, msz * 11);
-            rotateZ(a.z * rotangle);
-            rotateX(a.x * rotangle);
-            stroke(Palette.colors(i, 4, 60));
+            translate(msx * 4, msy * 4, msz * 4);
+            rotateZ(a.z * a.frequency * rotangle);
+            rotateX(a.x * a.frequency * rotangle);
+            stroke(Palette.colors(i, 5, 60));
             strokeWeight(0.1);
-            sphere(a.z * 0.05, 5, 5);
-            //pop();
+            sphere(a.z * 0.0025 * a.size, 5, 5);
             pop();
         }
-        */
 
         push();
         translate(a.x, a.y, a.z);
-        //push();
-        translate(mcz * 12, msx * 13, mcy * 11);
-        stroke(Palette.colors(i, 5, 70));
+        translate(mcz * 0.05 * a.frequency,
+                  msx * 0.05 * a.frequency,
+                  mcy * 0.05 * a.frequency);
+        stroke(Palette.colors(i, 6, 70));
         strokeWeight(0.1);
-        sphere(a.y * 0.02, 3, 3);
-        //pop();
+        sphere(a.y * 0.00125 * a.size, 3, 3);
         pop();
     }
 }
