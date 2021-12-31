@@ -8,14 +8,7 @@ class OrbitalState
     #max_jittering = 2.0;
     #edge = 350;
 
-    amplitude = 1.0;
-    amplitude_flag = 1;
-    frequency = 1.0;
-    frequency_flag = 1;
-    offset = 0.0;
-    offset_flag = 1;
-    size = 8.0;
-    size_flag = 1;
+
 
     // sum and multiply 2 arrays element by element
     /*
@@ -36,7 +29,6 @@ class OrbitalState
         this.x = x;
         this.y = y;
         this.z = z;
-        this.position = [this.x, this.y, this.z];
         this.vx = vx;
         this.vy = vy;
         this.vz = vz;
@@ -75,6 +67,8 @@ class OrbitalState
         this.offset_flag = 1;
         this.size = 8.0;
         this.size_flag = 1;
+        this.color_cycle = 1.0;
+        this.color_cycle_flag = 1;
     }
 
     update()
@@ -160,6 +154,11 @@ class OrbitalState
             this.size = constrain(this.size + 0.1, 2.0, 32);
         if (this.size_flag == -1)
             this.size = constrain(this.size - 0.1, 2.0, 32);
+        // start/stop color cycling
+        if (this.color_cycle_flag == 1) { ; }
+        if (this.color_cycle_flag == -1) { ; }
+
+
     }
 
     edge()
@@ -199,7 +198,7 @@ class OrbitalState
     // states, teachable AI
     start()
     {
-        //this.acceleration = 0.025;
+        this.color_cycle_flag = 1;
     }
 
     shake(jitter)
@@ -242,8 +241,7 @@ class OrbitalState
     
     stop()
     {
-        // add to vx, vy, vz, update, reset in update()
-        //this.acceleration = -0.025;
+        this.color_cycle_flag = -1;
     }
     //
     // sentiment could control angle

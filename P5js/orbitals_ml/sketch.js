@@ -120,8 +120,6 @@ function labelActions(a)
         a.shake(2.0); // jitter
     }
     */
-
-    
     if (label === "Wider")
     {
         a.wider();
@@ -146,7 +144,6 @@ function labelActions(a)
     {
         a.slower();
     }
-
     /*
     if (label === "Stop")
     {
@@ -254,6 +251,5 @@ function draw()
         sphere(a.y * 0.02, 3, 3);
         //pop();
         pop();
-        
     }
 }
