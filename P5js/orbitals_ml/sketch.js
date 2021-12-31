@@ -5,10 +5,10 @@ Array.prototype.random =
     return this[Math.floor((Math.random() * this.length))];
 }
 
-let p = [];
-const edge = 350;
+let p            = [];
+const edge       = 350;
 const frame_rate = 25;
-const dir = [
+const dir        = [
     [ 1, 0, 0 ],
     [ -1, 0, 0 ],
     [ 0, 1, 0 ],
@@ -33,13 +33,13 @@ const smul = (arr, x) => arr.map((a) => a * x)
 // TeachableAI setup
 // Global variable to store the classifier
 let classifier;
-
 // Label
 let label = "listening...";
-  
 // Teachable Machine model URL:
-const sound_model = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/"; 
-const ml_options = { probabilityThreshold: 0.8 };
+const sound_model = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/";
+const ml_options  = {
+    probabilityThreshold : 0.7
+};
 
 function preload()
 {
@@ -132,11 +132,11 @@ function labelActions(a)
 
 function rotate_screen(f)
 {
-    if (label == "Rotate X")
+    if (label == "X Rotate")
         rotate_x = true;
-    if (label == "Rotate Y")
+    if (label == "Y Rotate")
         rotate_y = true;
-    if (label == "Rotate Z")
+    if (label == "Z Rotate")
         rotate_z = true;
     if (label == "Stop")
     {
@@ -159,23 +159,22 @@ function draw()
     fill(255);
     text(label, width / 2, height / 2);
 
-    const f = frameCount;
+    const f          = frameCount;
     let speed_factor = 1.0; // this will change with input voice
 
     /*
     if (f % ((edge + 1) * 2) == 1)
     {
-        //initArray();
         initObject();
     }
     */
     rotate_screen(f);
-    
+
     const tdelta   = TWO_PI * f * 0.1;
     const rotangle = tdelta * 0.0005;
 
     background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
-    noFill();  
+    noFill();
 
     for (let i = 0; i < p.length - 1; i++)
     {
@@ -188,7 +187,8 @@ function draw()
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
-            if(square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
+            if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z)
+                < 1500)
             {
                 stroke(Palette.colors(i, 1, 50));
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
@@ -204,7 +204,7 @@ function draw()
         const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
         const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
         const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
-        
+
         if (i % 2 == 0)
         {
             push();
@@ -232,9 +232,10 @@ function draw()
 
         push();
         translate(a.x, a.y, a.z);
-        translate(mcz * 0.05 * a.frequency,
-                  msx * 0.05 * a.frequency,
-                  mcy * 0.05 * a.frequency);
+        translate(
+            mcz * 0.05 * a.frequency,
+            msx * 0.05 * a.frequency,
+            mcy * 0.05 * a.frequency);
         stroke(Palette.colors(i, 6, 70));
         strokeWeight(0.1);
         sphere(a.y * 0.00125 * a.size, 3, 3);
