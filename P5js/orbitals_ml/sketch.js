@@ -53,6 +53,10 @@ let pts = []
 let carrier, modulator;
 let freq, ampl;
 let reverb;
+const smoothing_period = 0.25;
+const max_amplitude = 0.5;
+const min_freq = 50;
+const max_freq = 5000;
 
 function preload()
 {
@@ -158,15 +162,10 @@ function gotResult(error, results)
 
 function labelActions(a)
 {
-    /*
     if (label === "Start")
     {
         a.start();
-        //modulator.start();
-        //carrier.disconnect();
-        //carrier.start();
     }
-    */
     
     // log at 1s intervals
     if (frameCount % frame_rate == 0) console.log("label = " + label);
@@ -185,29 +184,29 @@ function labelActions(a)
     {
         palette = 4;
         a.bigger();
-        ampl = constrain(ampl + 0.1, 0, 1);
-        modulator.amp(ampl, 0.25);
+        ampl = constrain(ampl + 0.05, 0, max_amplitude);
+        modulator.amp(ampl, smoothing_period);
     }
     if (label === "Smaller")
     {
         palette = 5;
         a.smaller();
-        ampl = constrain(ampl - 0.1, 0, 1);
-        modulator.amp(osc_ampl, 0.25);
+        ampl = constrain(ampl - 0.05, 0, max_amplitude);
+        modulator.amp(ampl, smoothing_period);
     }
     if (label === "Faster")
     {
         palette = 6;
         a.faster();
-        freq = constrain(freq + 10, 100, 10000);
-        modulator.freq(freq, 0.25);
+        freq = constrain(freq + 10, min_freq, max_freq);
+        modulator.freq(freq, smoothing_period);
     }
     if (label === "Slower")
     {
         palette = 7;
         a.slower();
-        freq = constrain(freq - 10, 100, 10000);
-        modulator.freq(freq, 0.25);
+        freq = constrain(freq - 10, min_freq, max_freq);
+        modulator.freq(freq, smoothing_period);
     }
     if (label == "Warmer")
     {
@@ -273,7 +272,6 @@ function draw()
     textFont(font);
     textSize(200);
     textAlign(CENTER, CENTER);
-    fill(255);
     pts = font.textToPoints(label, -400, -200, 200, {
         sampleFactor: 0.1, // increase for more points
         simplifyThreshold: 0.0 // increase to remove collinear points
@@ -287,7 +285,6 @@ function draw()
     }
     endShape()
     */
-
 
     for (let i = 0; i < p.length - 1; i++)
     {
