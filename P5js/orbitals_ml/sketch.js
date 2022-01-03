@@ -243,7 +243,7 @@ function draw()
             translate(mcx, mcy, mcz);
             rotateZ(a.z * a.frequency * rotangle);
             rotateY(a.y * a.frequency * rotangle);
-            stroke(Palette.colors(i, 4, 60));
+            stroke(Palette.colors(i, palette % Palette.palette_length, 60));
             strokeWeight(0.2);
             box(a.size);
             pop();
@@ -255,7 +255,7 @@ function draw()
             translate(msx * 4, msy * 4, msz * 4);
             rotateZ(a.z * a.frequency * rotangle);
             rotateX(a.x * a.frequency * rotangle);
-            stroke(Palette.colors(i, 5, 60));
+            stroke(Palette.colors(palette % Palette.palette_length, 5, 60));
             strokeWeight(0.1);
             sphere(a.z * 0.0025 * a.size, 5, 5);
             pop();
@@ -267,7 +267,7 @@ function draw()
             mcz * 0.05 * a.frequency,
             msx * 0.05 * a.frequency,
             mcy * 0.05 * a.frequency);
-            stroke(Palette.colors(i, 6, 70));
+            stroke(Palette.colors(i, palette % Palette.palette_length, 70));
             strokeWeight(0.1);
             sphere(a.y * 0.00125 * a.size, 3, 3);
             pop();
