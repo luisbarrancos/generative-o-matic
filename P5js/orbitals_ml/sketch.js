@@ -1,8 +1,7 @@
 "use strict";
 
-
 Array.prototype.random =
-function() {
+    function() {
     return this[Math.floor((Math.random() * this.length))];
 }
 
@@ -21,6 +20,7 @@ const dir        = [
 let rotate_x = false;
 let rotate_y = false;
 let rotate_z = false;
+const steps  = 4; // do don't go above 4, you were warned.
 
 // Math.pow is slower, and Math.hypot is incredbly slow
 const square = x => x * x;
@@ -35,7 +35,7 @@ const smul = (arr, x) => arr.map((a) => a * x)
 // Global variable to store the classifier
 let classifier;
 // Label
-let label = "listening...";
+let label      = "listening...";
 let confidence = 0;
 
 // Teachable Machine model URL:
@@ -46,42 +46,35 @@ const ml_options  = {
 
 // color palette cycling, choices
 let palette = 0;
-let font = null;
-let pts = []
+let font    = null;
+let pts     = []
 
-// Sound
-let carrier, modulator;
+    // Sound
+    let carrier,
+    modulator, reverb;
 let freq, ampl;
-let reverb;
 const smoothing_period = 0.25;
-const max_amplitude = 0.5;
-const min_freq = 50;
-const max_freq = 5000;
+const max_amplitude    = 0.5;
+const min_freq         = 50;
+const max_freq         = 5000;
+
+let show_help = false;
 
 function preload()
 {
     // Load the model
     classifier = ml5.soundClassifier(sound_model + "model.json", ml_options);
-    font = loadFont("assets/drafpc__.ttf");
+    font       = loadFont("assets/drafpc__.ttf");
 }
 
-function hex2rgb(hex)
-{
-    return [
-        "0x" + hex[1] + hex[2] | 0,
-        "0x" + hex[3] + hex[4] | 0,
-        "0x" + hex[5] + hex[6] | 0
-    ];
-}
-
-function initObject()
+function init_object()
 {
     p.length = 0;
-    for (let x = -4; x <= 4; x++)
+    for (let x = -steps; x <= steps; x++)
     {
-        for (let y = -4; y <= 4; y++)
+        for (let y = -steps; y <= steps; y++)
         {
-            for (let z = -4; z <= 4; z++)
+            for (let z = -steps; z <= steps; z++)
             {
                 const [vx, vy, vz] = dir.random();
                 let obj = new OrbitalState(x * 40, y * 40, z * 40, vx, vy, vz);
@@ -91,7 +84,7 @@ function initObject()
     }
 }
 
-function soundSetup()
+function sound_setup()
 {
     // we'll be hearing the carrier
     ampl = 100;
@@ -108,46 +101,86 @@ function soundSetup()
     modulator.amp(ampl);
     modulator.disconnect();
 
-    carrier.start();
-    modulator.start();
-    carrier.freq(modulator);
-
     // give some depth, Convolve seems heavier though. Try reverb
     // https://p5js.org/reference/#/p5.Reverb
     reverb = new p5.Reverb();
+    reverb.disconnect();
     reverb.drywet(0.7);
     // long delay with a short time gives a nice layered texture
-    reverb.process(carrier, 15, 5, 0.1);  
+    reverb.process(carrier, 15, 5, 0.1);
+    reverb.connect();
+
+    carrier.start();
+    modulator.start();
+    carrier.freq(modulator);
 }
 
 function sonorize(radius, distance)
 {
     // Change the modulator for the FM synthesis based on the x values
     // of the Y strip intersected particles.
-    ampl = map(distance, 0, radius, 0, 0.5);
-    // modulator_amplitude = map(this.position.x, 0, width, 1, 5000);
+    ampl = constrain(map(distance, 0, radius, 0, 0.5), 0, 0.5);
+    // ampl = map(distance, 0, radius, 0, 0.5);
     modulator.amp(ampl, 0.05);
 
-    freq = map(distance, 0, width, 100, 5000);
-    modulator.freq(freq, 0.01);    
+    freq = constrain(map(distance, 0, radius, 100, 5000), -22049, 22049);
+    // freq = map(distance, 0, radius, 100, 5000);
+    modulator.freq(freq, 0.01);
 }
 
 function setup()
 {
     p5.disableFriendlyErrors = true;
+    // 854x480, 640x360, 1280x720
     createCanvas(width = 1280, height = 720, WEBGL);
     frameRate(frame_rate);
     background(0);
     // Start classifying
     // The sound model will continuously listen to the microphone
-    classifier.classify(gotResult);
+    classifier.classify(got_result);
     // initialize the shapes array
-    initObject();
-    soundSetup();
+    init_object();
+    sound_setup();
+}
+
+function setup_text()
+{
+    // DEBUG: Uncomment to debug AI/ML
+    /*
+    textFont(font);
+    textSize(200);
+    textAlign(CENTER, CENTER);
+    pts = font.textToPoints(label, -400, -200, 200, {
+        sampleFactor: 0.1, // increase for more points
+        simplifyThreshold: 0.0 // increase to remove collinear points
+    })
+    //text(label, -400, -200);
+
+    beginShape(POINTS)
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i]
+      vertex(p.x, p.y)
+    }
+    endShape()
+    */
+    textFont(font);
+    textSize(36);
+    textAlign(0, 0);
+    fill(Palette.colors(0, palette, 50));
+
+    const infotext = "Voice Commands:\n\n" +
+                     "X Rotate\nY Rotate\nZ Rotate\nStop\n" +
+                     "Warmer | Colder\n" +
+                     "Faster | Slower\n" +
+                     "Bigger | Smaller\n" +
+                     "Wider | Closer\n" +
+                     "Help | Hide\n";
+
+    text(infotext, -width / 2.2, -height / 2.5);
 }
 
 // The model recognizing a sound will trigger this event
-function gotResult(error, results)
+function got_result(error, results)
 {
     if (error)
     {
@@ -156,20 +189,18 @@ function gotResult(error, results)
     }
     // The results are in an array ordered by confidence.
     // console.log(results[0]);
-    label = results[0].label;
+    label      = results[0].label;
     confidence = results[0].confidence;
 }
 
-function labelActions(a)
+function label_actions(a)
 {
+    // DEBUG: uncomment to debug sound classification
+    // if (frameCount % frame_rate == 0) console.log("label = " + label);
     if (label === "Start")
     {
         a.start();
     }
-    
-    // log at 1s intervals
-    if (frameCount % frame_rate == 0) console.log("label = " + label);
-
     if (label === "Wider")
     {
         palette = 2;
@@ -208,12 +239,12 @@ function labelActions(a)
         freq = constrain(freq - 10, min_freq, max_freq);
         modulator.freq(freq, smoothing_period);
     }
-    if (label == "Warmer")
+    if (label === "Warmer")
     {
         palette = 9;
         carrier.setType("sine");
     }
-    if (label == "Colder")
+    if (label === "Colder")
     {
         palette = 10;
         carrier.setType("square");
@@ -221,8 +252,8 @@ function labelActions(a)
     if (label === "Stop")
     {
         a.stop();
-        //carrier.stop();
-        //modulator.stop();
+        // carrier.stop();
+        // modulator.stop();
     }
 }
 
@@ -230,17 +261,17 @@ function rotate_screen(f)
 {
     if (label == "X Rotate")
     {
-        palette = 11;
+        palette  = 11;
         rotate_x = true;
     }
     if (label == "Y Rotate")
     {
-        palette = 12;
+        palette  = 12;
         rotate_y = true;
     }
     if (label == "Z Rotate")
     {
-        palette = 13;
+        palette  = 13;
         rotate_z = true;
     }
     //
@@ -251,9 +282,12 @@ function rotate_screen(f)
         rotate_z = false;
     }
     //
-    if (rotate_x == true) rotateX(f / 23);
-    if (rotate_y == true) rotateY(f / 47);
-    if (rotate_z == true) rotateZ(f / 31);
+    if (rotate_x == true)
+        rotateX(f / 23);
+    if (rotate_y == true)
+        rotateY(f / 47);
+    if (rotate_z == true)
+        rotateZ(f / 31);
 }
 
 function draw()
@@ -261,100 +295,63 @@ function draw()
     const f = frameCount;
     rotate_screen(f);
     const tdelta   = TWO_PI * f * 0.1;
-    const rotangle = tdelta * 0.00005;
-    
-    //background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
+    const rotangle = tdelta * 0.000005;
+
+    // background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
     background(0);
     noFill();
 
-    // DEBUG: Uncomment to debug AI/ML 
-    /*
-    textFont(font);
-    textSize(200);
-    textAlign(CENTER, CENTER);
-    pts = font.textToPoints(label, -400, -200, 200, {
-        sampleFactor: 0.1, // increase for more points
-        simplifyThreshold: 0.0 // increase to remove collinear points
-    })
-    //text(label, -400, -200);
-    
-    beginShape(POINTS)
-    for (let i = 0; i < pts.length; i++) {
-      const p = pts[i]
-      vertex(p.x, p.y)
+    if (show_help == true)
+    {
+        fill(127);
+        setup_text();
+        noFill();
     }
-    endShape()
-    */
     /*
     if (f % ((edge + 1) * 2) == 1)
     {
-        initObject();
+        init_object();
     }
     */
     for (let i = 0; i < p.length - 1; i++)
     {
         let a = p[i];
-        
+
         if (i % frame_rate == 0)
         {
-            // Every 1s, update with the last vx, vy, vz values. This should result in a
-            // slow crescendo until a reset happens.
+            // Every 1s, update with the last vx, vy, vz values. This should
+            // result in a slow crescendo until a reset happens.
             sonorize(5000, square(a.vx) + square(a.vy) + square(a.vz));
         }
 
-        labelActions(a);
+        label_actions(a);
         a.edge();
         a.update();
-        
+
         stroke(Palette.colors(i, palette % Palette.palette_length, 50));
 
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
 
-            if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
+            if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z)
+                < 1500)
             {
-                //if (j % frame_rate == 0 && i % frame_rate == 0)
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
-
-        const axdelta = a.x + tdelta % frame_rate;
-        const aydelta = a.y + tdelta % frame_rate;
-        const azdelta = a.z + tdelta % frame_rate;
-        /*
-        const mcx     = a.amplitude * Math.cos(a.frequency + axdelta);
-        const mcy     = a.amplitude * Math.cos(a.frequency + aydelta);
-        const mcz     = a.amplitude * Math.cos(a.frequency + azdelta);
-        const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
-        const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
-        const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
-        */
         const costheta = a.amplitude * Math.cos(a.frequency * rotangle);
         const sintheta = a.amplitude * Math.sin(a.frequency * rotangle);
-        const mcx = costheta;
-        const mcy = costheta;
-        const mcz = costheta;
-        const msx = sintheta;
-        const msy = sintheta;
-        const msz = sintheta;
-        /*
-        const mcx = costheta + axdelta;
-        const mcy = costheta + aydelta;
-        const mcz = costheta + azdelta;
-        const msx = costheta + axdelta;
-        const msy = costheta + aydelta;
-        const msz = costheta * azdelta;
-        */
 
         if (i % 2 == 0)
         {
             push();
             translate(a.x, a.y, a.z);
-            translate(mcx, mcy, mcz);
+            translate(costheta, costheta, costheta);
             rotateZ(a.z * a.frequency * rotangle);
             rotateY(a.y * a.frequency * rotangle);
-            //stroke(Palette.colors(i, (palette + 1) % Palette.palette_length, 50));
+            // stroke(Palette.colors(i, (palette + 1) % Palette.palette_length,
+            // 50));
             strokeWeight(0.2);
             box(a.size);
             pop();
@@ -363,25 +360,31 @@ function draw()
         {
             push();
             translate(a.x, a.y, a.z);
-            translate(msx * 4, msy * 4, msz * 4);
+            translate(sintheta * 4, sintheta * 4, sintheta * 4);
             rotateZ(a.z * a.frequency * rotangle);
             rotateX(a.x * a.frequency * rotangle);
-            //stroke(Palette.colors(i, (palette + 2) % Palette.palette_length, 50));
+            // stroke(Palette.colors(i, (palette + 2) % Palette.palette_length,
+            // 50));
             strokeWeight(0.1);
             sphere(a.z * 0.0025 * a.size, 5, 5);
             pop();
         }
-        
+
         push();
         translate(a.x, a.y, a.z);
         translate(
-            mcz * 0.05 * a.frequency,
-            msx * 0.05 * a.frequency,
-            mcy * 0.05 * a.frequency);
-            //stroke(Palette.colors(i, (palette + 3) % Palette.palette_length, 50));
-            strokeWeight(0.1);
-            sphere(a.y * 0.00125 * a.size, 3, 3);
-            pop();
-        }
+            costheta * 0.05 * a.frequency,
+            sintheta * 0.05 * a.frequency,
+            costheta * 0.05 * a.frequency);
+        // stroke(Palette.colors(i, (palette + 3) % Palette.palette_length,
+        // 50));
+        strokeWeight(0.1);
+        sphere(a.y * 0.00125 * a.size, 3, 3);
+        pop();
     }
-    
+}
+
+function mouseIsPressed()
+{
+    show_help = true;
+}

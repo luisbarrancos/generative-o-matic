@@ -32,16 +32,16 @@ class OrbitalState
         this.scale_z    = 1.0;
         this.#edge      = 350;
 
-        this.amplitude          = 1.0;
-        this.amplitude_flag     = 1;
-        this.frequency          = 1.0;
-        this.frequency_flag     = 1;
-        this.offset             = 0.0;
-        this.offset_flag        = 1;
-        this.size               = 8.0;
-        this.size_flag          = 1;
-        this.color_hue          = 1.0;
-        this.color_hue_flag     = 1;
+        this.amplitude      = 1.0;
+        this.amplitude_flag = 1;
+        this.frequency      = 1.0;
+        this.frequency_flag = 1;
+        this.offset         = 0.0;
+        this.offset_flag    = 1;
+        this.size           = 8.0;
+        this.size_flag      = 1;
+        this.color_hue      = 1.0;
+        this.color_hue_flag = 1;
     }
 
     update()
@@ -76,7 +76,7 @@ class OrbitalState
         // jittering
         if (this.jittering_flag == 1)
         {
-            //this.timer
+            // this.timer
         }
         // warmer, cooler color hues
         if (this.color_cycle_flag == 1)
@@ -107,20 +107,14 @@ class OrbitalState
             this.vz *= -1;
         }
     }
-    start()
-    {
-        this.color_cycle_flag = 1;
-    }
+    start() { this.color_cycle_flag = 1; }
     wider() { this.amplitude_flag = 1; }
     closer() { this.amplitude_flag = -1; }
     bigger() { this.size_flag = 1; }
     smaller() { this.size_flag = -1; }
     faster() { this.frequency_flag = 1; }
     slower() { this.frequency_flag = -1; }
-    stop()
-    {
-        this.color_cycle_flag = -1;
-    }
+    stop() { this.color_cycle_flag = -1; }
     rotate_x(x) { this.rotate_x += this.angle; }
     rotate_y(y) { this.rotate_y += this.angle; }
     rotate_z(z) { this.rotate_z += this.angle; }

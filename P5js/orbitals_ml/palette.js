@@ -4,7 +4,8 @@ class Palette
     // 2. each line corresponds to a color "state" to be trained
     // 3. add a comment to keep track of the training states
 
-    static #color_tables = [
+    static #color_tables =
+    [
         // start
         "083d77,ebebd3,f4d35e,ee964b,f95738",
         // shake
@@ -38,12 +39,21 @@ class Palette
     ]
 
     static palette_length = this.#color_tables.length;
-    static color_weights = Array(this.palette_length).fill(0);
+    static color_weights  = Array(this.palette_length).fill(0);
+
+    static hex2rgb(hex)
+    {
+        return [
+            "0x" + hex[1] + hex[2] | 0,
+            "0x" + hex[3] + hex[4] | 0,
+            "0x" + hex[5] + hex[6] | 0
+        ];
+    }
 
     static colors(i, state, period)
     {
         const ndx = Math.floor(state % this.#color_tables.length);
-        const c = this.#color_tables[ndx].split(",").map(x => "#" + x);
+        const c   = this.#color_tables[ndx].split(",").map(x => "#" + x);
         return c[Math.round(i / 50) % c.length];
     }
 
