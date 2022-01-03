@@ -101,6 +101,9 @@ function labelActions(a)
         /a.start();
     }
     */
+    // log at 1s intervals
+    if (frameCount % frame_rate == 0) console.log("label = " + label);
+
     if (label === "Wider")
     {
         palette = 2;
@@ -139,12 +142,10 @@ function labelActions(a)
     {
         palette = 10;
     }
-    /*
     if (label === "Stop")
     {
         a.stop();
     }
-    */
 }
 
 function rotate_screen(f)
