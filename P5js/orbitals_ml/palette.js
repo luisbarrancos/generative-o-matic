@@ -25,9 +25,9 @@ class Palette
         "003049,d62828,f77f00,fcbf49,eae2b7",
         // sentiment analysis ?
         // positive, warm colors, jittery motion
-        "03045e,023e8a,0077b6,0096c7,00b4d8,48cae4,90e0ef,ade8f4,caf0f8",
+        "03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08",
         // negative, cool colors, steady motion
-        "001219,005f73,0a9396,94d2bd,e9d8a6,ee9b00,ca6702,bb3e03,ae2012,9b2226",
+        "03045e,023e8a,0077b6,0096c7,00b4d8,48cae4,90e0ef,ade8f4,caf0f8",
         // rotate on X, Y, Z, or translate on X, Y, Z
         // rotate on X, with radians depending on strenght
         "03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08",
@@ -36,6 +36,8 @@ class Palette
         // rotate on Z, with radians depending on strenght
         "007f5f,2b9348,55a630,80b918,aacc00,bfd200,d4d700,dddf00,eeef20,ffff3f",
     ]
+
+    static palette_length = this.#color_tables.length;
 
     static colors(i, state, period)
     {

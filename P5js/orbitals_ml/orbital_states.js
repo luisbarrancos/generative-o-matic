@@ -32,16 +32,16 @@ class OrbitalState
         this.scale_z    = 1.0;
         this.#edge      = 350;
 
-        this.amplitude        = 1.0;
-        this.amplitude_flag   = 1;
-        this.frequency        = 1.0;
-        this.frequency_flag   = 1;
-        this.offset           = 0.0;
-        this.offset_flag      = 1;
-        this.size             = 8.0;
-        this.size_flag        = 1;
-        this.color_cycle      = 1.0;
-        this.color_cycle_flag = 1;
+        this.amplitude          = 1.0;
+        this.amplitude_flag     = 1;
+        this.frequency          = 1.0;
+        this.frequency_flag     = 1;
+        this.offset             = 0.0;
+        this.offset_flag        = 1;
+        this.size               = 8.0;
+        this.size_flag          = 1;
+        this.color_hue          = 1.0;
+        this.color_hue_flag     = 1;
     }
 
     update()
@@ -49,8 +49,8 @@ class OrbitalState
         // faster, slower
         if (this.frequency_flag == 1)
             this.frequency = constrain(this.frequency + 0.5, 0, 32)
-            if (this.frequency_flag == -1) this.frequency =
-                constrain(this.frequency - 0.5, 0, 32);
+        if (this.frequency_flag == -1) this.frequency =
+            constrain(this.frequency - 0.5, 0, 32);
         // wider, closer
         if (this.amplitude_flag == 1)
             this.amplitude = constrain(this.amplitude + 0.1, 0, 2);
@@ -61,13 +61,14 @@ class OrbitalState
             this.size = constrain(this.size + 0.1, 2.0, 32);
         if (this.size_flag == -1)
             this.size = constrain(this.size - 0.1, 2.0, 32);
+        // jittering
         if (this.jittering_flag == 1)
             this.timer
-            // start/stop color cycling
-            if (this.color_cycle_flag == 1)
-            {
-                ;
-            }
+        // warmer, cooler color hues
+        if (this.color_cycle_flag == 1)
+        {
+            ;
+        }
         if (this.color_cycle_flag == -1)
         {
             ;

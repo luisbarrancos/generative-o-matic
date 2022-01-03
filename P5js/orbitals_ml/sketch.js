@@ -1,7 +1,8 @@
 "use strict";
 
+
 Array.prototype.random =
-    function() {
+function() {
     return this[Math.floor((Math.random() * this.length))];
 }
 
@@ -40,6 +41,8 @@ const sound_model = "https://teachablemachine.withgoogle.com/models/SyzvFAQv2/";
 const ml_options  = {
     probabilityThreshold : 0.7
 };
+// color palette cycling, choices
+let palette = 0;
 
 function preload()
 {
@@ -95,32 +98,46 @@ function labelActions(a)
     /*
     if (label === "Start")
     {
-       /a.start();
+        /a.start();
     }
     */
     if (label === "Wider")
     {
+        palette = 2;
         a.wider();
     }
     if (label === "Closer")
     {
+        palette = 3;
         a.closer();
     }
     if (label === "Bigger")
     {
+        palette = 4;
         a.bigger();
     }
     if (label === "Smaller")
     {
+        palette = 5;
         a.smaller();
     }
     if (label === "Faster")
     {
+        palette = 6;
         a.faster();
     }
     if (label === "Slower")
     {
+        palette = 7;
         a.slower();
+    }
+    if (label == "Warmer")
+    {
+        palette = 9;
+    }
+    if (label == "Colder")
+    {
+        palette = 10;
     }
     /*
     if (label === "Stop")
@@ -133,23 +150,31 @@ function labelActions(a)
 function rotate_screen(f)
 {
     if (label == "X Rotate")
+    {
+        palette = 11;
         rotate_x = true;
+    }
     if (label == "Y Rotate")
+    {
+        palette = 12;
         rotate_y = true;
+    }
     if (label == "Z Rotate")
+    {
+        palette = 13;
         rotate_z = true;
+    }
+    //
     if (label == "Stop")
     {
         rotate_x = false;
         rotate_y = false;
         rotate_z = false;
     }
-    if (rotate_x == true)
-        rotateX(f / 23);
-    if (rotate_y == true)
-        rotateY(f / 47);
-    if (rotate_z == true)
-        rotateZ(f / 31);
+    //
+    if (rotate_x == true) rotateX(f / 23);
+    if (rotate_y == true) rotateY(f / 47);
+    if (rotate_z == true) rotateZ(f / 31);
 }
 
 function draw()
@@ -158,10 +183,10 @@ function draw()
     textAlign(CENTER, CENTER);
     fill(255);
     text(label, width / 2, height / 2);
-
+    
     const f          = frameCount;
     let speed_factor = 1.0; // this will change with input voice
-
+    
     /*
     if (f % ((edge + 1) * 2) == 1)
     {
@@ -169,42 +194,47 @@ function draw()
     }
     */
     rotate_screen(f);
-
+    
     const tdelta   = TWO_PI * f * 0.1;
     const rotangle = tdelta * 0.0005;
-
-    background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
+    
+    //background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
+    background(0);
     noFill();
-
+    
     for (let i = 0; i < p.length - 1; i++)
     {
         let a = p[i];
-
+        
         labelActions(a);
         a.edge();
         a.update();
-
+        
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
-            if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z)
-                < 1500)
+            if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
             {
-                stroke(Palette.colors(i, 1, 50));
+                stroke(Palette.colors(i, palette % Palette.palette_length, 50));
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
-
+        
         const axdelta = a.x + tdelta;
         const aydelta = a.y + tdelta;
         const azdelta = a.z + tdelta;
-        const mcx     = a.amplitude * Math.cos(a.frequency * axdelta);
-        const mcy     = a.amplitude * Math.cos(a.frequency * aydelta);
-        const mcz     = a.amplitude * Math.cos(a.frequency * azdelta);
+        const mcx     = a.amplitude * Math.cos(a.frequency + axdelta);
+        const mcy     = a.amplitude * Math.cos(a.frequency + aydelta);
+        const mcz     = a.amplitude * Math.cos(a.frequency + azdelta);
+        const msx     = Math.sqrt(Math.max(0, 1 - square(a.frequency + axdelta)));
+        const msy     = Math.sqrt(Math.max(0, 1 - square(a.frequency + aydelta)));
+        const msz     = Math.sqrt(Math.max(0, 1 - square(a.frequency + azdelta)));
+        /*
         const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
         const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
         const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
-
+        */
+        
         if (i % 2 == 0)
         {
             push();
@@ -229,16 +259,17 @@ function draw()
             sphere(a.z * 0.0025 * a.size, 5, 5);
             pop();
         }
-
+        
         push();
         translate(a.x, a.y, a.z);
         translate(
             mcz * 0.05 * a.frequency,
             msx * 0.05 * a.frequency,
             mcy * 0.05 * a.frequency);
-        stroke(Palette.colors(i, 6, 70));
-        strokeWeight(0.1);
-        sphere(a.y * 0.00125 * a.size, 3, 3);
-        pop();
+            stroke(Palette.colors(i, 6, 70));
+            strokeWeight(0.1);
+            sphere(a.y * 0.00125 * a.size, 3, 3);
+            pop();
+        }
     }
-}
+    
