@@ -120,14 +120,12 @@ function sonorize(radius, distance)
 {
     // Change the modulator for the FM synthesis based on the x values
     // of the Y strip intersected particles.
-    ampl = map(distance, 0, radius, 0, 1);
+    ampl = map(distance, 0, radius, 0, 0.5);
     // modulator_amplitude = map(this.position.x, 0, width, 1, 5000);
     modulator.amp(ampl, 0.05);
 
     freq = map(distance, 0, width, 100, 5000);
-    modulator.freq(freq, 0.01);
-    //const xpan = constrain((this.position.x / width) * 2 - 0.9, -0.9, 0.9);
-    //modulator.pan(xpan);     
+    modulator.freq(freq, 0.01);    
 }
 
 function setup()
