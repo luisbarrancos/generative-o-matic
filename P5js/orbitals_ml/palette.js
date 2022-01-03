@@ -38,6 +38,7 @@ class Palette
     ]
 
     static palette_length = this.#color_tables.length;
+    static color_weights = Array(this.palette_length).fill(0);
 
     static colors(i, state, period)
     {

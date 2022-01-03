@@ -48,22 +48,36 @@ class OrbitalState
     {
         // faster, slower
         if (this.frequency_flag == 1)
+        {
             this.frequency = constrain(this.frequency + 0.5, 0, 32)
-        if (this.frequency_flag == -1) this.frequency =
-            constrain(this.frequency - 0.5, 0, 32);
+        }
+        if (this.frequency_flag == -1)
+        {
+            this.frequency = constrain(this.frequency - 0.5, 0, 32);
+        }
         // wider, closer
         if (this.amplitude_flag == 1)
+        {
             this.amplitude = constrain(this.amplitude + 0.1, 0, 2);
+        }
         if (this.amplitude_flag == -1)
+        {
             this.amplitude = constrain(this.amplitude - 0.1, 0, 2);
+        }
         // bigger, smaller
         if (this.size_flag == 1)
+        {
             this.size = constrain(this.size + 0.1, 2.0, 32);
+        }
         if (this.size_flag == -1)
+        {
             this.size = constrain(this.size - 0.1, 2.0, 32);
+        }
         // jittering
         if (this.jittering_flag == 1)
-            this.timer
+        {
+            //this.timer
+        }
         // warmer, cooler color hues
         if (this.color_cycle_flag == 1)
         {
@@ -80,7 +94,7 @@ class OrbitalState
         this.x += this.vx * 2;
         if (Math.abs(this.x) > this.#edge)
         {
-            this.vx *= -1;
+            this.vx += -1;
         }
         this.y += this.vy * 2;
         if (Math.abs(this.y) > this.#edge)
@@ -93,14 +107,20 @@ class OrbitalState
             this.vz *= -1;
         }
     }
-    start() { this.color_cycle_flag = 1; }
+    start()
+    {
+        this.color_cycle_flag = 1;
+    }
     wider() { this.amplitude_flag = 1; }
     closer() { this.amplitude_flag = -1; }
     bigger() { this.size_flag = 1; }
     smaller() { this.size_flag = -1; }
     faster() { this.frequency_flag = 1; }
     slower() { this.frequency_flag = -1; }
-    stop() { this.color_cycle_flag = -1; }
+    stop()
+    {
+        this.color_cycle_flag = -1;
+    }
     rotate_x(x) { this.rotate_x += this.angle; }
     rotate_y(y) { this.rotate_y += this.angle; }
     rotate_z(z) { this.rotate_z += this.angle; }
