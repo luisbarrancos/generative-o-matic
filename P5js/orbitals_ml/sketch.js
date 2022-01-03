@@ -64,7 +64,7 @@ function preload()
 {
     // Load the model
     classifier = ml5.soundClassifier(sound_model + "model.json", ml_options);
-    font       = loadFont("assets/drafpc__.ttf");
+    font       = loadFont("assets/_decterm.ttf");
 }
 
 function init_object()
@@ -164,9 +164,11 @@ function setup_text()
     endShape()
     */
     textFont(font);
-    textSize(36);
+    textSize(18);
     textAlign(0, 0);
-    fill(Palette.colors(0, palette, 50));
+    const c1 = color(Palette.hex2rgb(Palette.colors(0, palette, 50)));
+    c1.setAlpha(40);
+    fill(c1);
 
     const infotext = "Voice Commands:\n\n" +
                      "X Rotate\nY Rotate\nZ Rotate\nStop\n" +
@@ -176,7 +178,9 @@ function setup_text()
                      "Wider | Closer\n" +
                      "Help | Hide\n";
 
-    text(infotext, -width / 2.2, -height / 2.5);
+    text(infotext, width / 3 , height / 9);
+    noFill();
+    c1.setAlpha(255);
 }
 
 // The model recognizing a sound will trigger this event
@@ -303,9 +307,13 @@ function draw()
 
     if (show_help == true)
     {
-        fill(127);
-        setup_text();
+        stroke(127);
         noFill();
+        setup_text();
+        if (f % (2 * frame_rate) == 0)
+        {
+            show_help = false;
+        }
     }
     /*
     if (f % ((edge + 1) * 2) == 1)
