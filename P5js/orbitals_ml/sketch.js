@@ -285,13 +285,22 @@ function draw()
     }
     endShape()
     */
-
+    /*
+    if (f % ((edge + 1) * 2) == 1)
+    {
+        initObject();
+    }
+    */
     for (let i = 0; i < p.length - 1; i++)
     {
         let a = p[i];
         
         if (i % frame_rate == 0)
+        {
+            // Every 1s, update with the last vx, vy, vz values. This should result in a
+            // slow crescendo until a reset happens.
             sonorize(5000, square(a.vx) + square(a.vy) + square(a.vz));
+        }
 
         labelActions(a);
         a.edge();
@@ -310,15 +319,33 @@ function draw()
             }
         }
 
-        const axdelta = a.x + tdelta;
-        const aydelta = a.y + tdelta;
-        const azdelta = a.z + tdelta;
+        const axdelta = a.x + tdelta % frame_rate;
+        const aydelta = a.y + tdelta % frame_rate;
+        const azdelta = a.z + tdelta % frame_rate;
+        /*
         const mcx     = a.amplitude * Math.cos(a.frequency + axdelta);
         const mcy     = a.amplitude * Math.cos(a.frequency + aydelta);
         const mcz     = a.amplitude * Math.cos(a.frequency + azdelta);
         const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
         const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
         const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
+        */
+        const costheta = a.amplitude * Math.cos(a.frequency * rotangle);
+        const sintheta = a.amplitude * Math.sin(a.frequency * rotangle);
+        const mcx = costheta;
+        const mcy = costheta;
+        const mcz = costheta;
+        const msx = sintheta;
+        const msy = sintheta;
+        const msz = sintheta;
+        /*
+        const mcx = costheta + axdelta;
+        const mcy = costheta + aydelta;
+        const mcz = costheta + azdelta;
+        const msx = costheta + axdelta;
+        const msy = costheta + aydelta;
+        const msz = costheta * azdelta;
+        */
 
         if (i % 2 == 0)
         {
