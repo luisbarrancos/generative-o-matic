@@ -50,12 +50,9 @@ let font = null;
 let pts = []
 
 // Sound
-let modulator = null;
-let carrier = null;
-let pan = null;
-let freq = 440;
-let ampl = 0.8;
-let playing = false;
+let carrier, modulator;
+let freq, ampl;
+let reverb;
 
 function preload()
 {
@@ -92,22 +89,45 @@ function initObject()
 
 function soundSetup()
 {
-    carrier = new p5.Oscillator();
-    carrier.setType("sine");
+    // we'll be hearing the carrier
+    ampl = 100;
+    freq = 200;
+
+    carrier = new p5.Oscillator("sine");
+    carrier.amp(0.1);
+    carrier.freq(220); // carrier base frequency
+    carrier.disconnect();
+
+    // modulated by this modulator
+    modulator = new p5.Oscillator("sine");
+    modulator.freq(freq);
+    modulator.amp(ampl);
+    modulator.disconnect();
+
     carrier.start();
-    modulator = new p5.Oscillator();
-    modulator.setType("sine");
-    modulator.disconnect(); // don't send to speakers
     modulator.start();
-    //
-    pan = new p5.Panner3D();
-    pan.process(carrier);
-    pan.setFalloff(Math.min(width, height) / 2, 1);
-    // By default the sound source will be omni-directional
-    pan.panner.coneInnerAngle = 60;
-    pan.panner.coneOuterAngle = 360;
-    // You can also adjust how quite the sound outside the
-    // outer code is with coneOuterGain  which defaults to 0
+    carrier.freq(modulator);
+
+    // give some depth, Convolve seems heavier though. Try reverb
+    // https://p5js.org/reference/#/p5.Reverb
+    reverb = new p5.Reverb();
+    reverb.drywet(0.7);
+    // long delay with a short time gives a nice layered texture
+    reverb.process(carrier, 15, 5, 0.1);  
+}
+
+function sonorize(radius, distance)
+{
+    // Change the modulator for the FM synthesis based on the x values
+    // of the Y strip intersected particles.
+    ampl = map(distance, 0, radius, 0, 1);
+    // modulator_amplitude = map(this.position.x, 0, width, 1, 5000);
+    modulator.amp(ampl, 0.05);
+
+    freq = map(distance, 0, width, 100, 5000);
+    modulator.freq(freq, 0.01);
+    //const xpan = constrain((this.position.x / width) * 2 - 0.9, -0.9, 0.9);
+    //modulator.pan(xpan);     
 }
 
 function setup()
@@ -242,11 +262,9 @@ function rotate_screen(f)
 function draw()
 {
     const f = frameCount;
-
     rotate_screen(f);
-    
     const tdelta   = TWO_PI * f * 0.1;
-    const rotangle = tdelta * 0.0005;
+    const rotangle = tdelta * 0.00005;
     
     //background((f + 127) % 255, 40, Math.floor(noise(f * 0.01) * 50));
     background(0);
@@ -272,18 +290,14 @@ function draw()
     endShape()
     */
 
-    if (!playing)
-    {
-        carrier.amp(modulator);
-        carrier.freq(freq);
-        playing = true;
-    }
-
 
     for (let i = 0; i < p.length - 1; i++)
     {
         let a = p[i];
         
+        if (i % frame_rate == 0)
+            sonorize(5000, square(a.vx) + square(a.vy) + square(a.vz));
+
         labelActions(a);
         a.edge();
         a.update();
@@ -293,8 +307,10 @@ function draw()
         for (let j = i + 1; j < p.length; j++)
         {
             const b = p[j];
+
             if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
             {
+                //if (j % frame_rate == 0 && i % frame_rate == 0)
                 line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
@@ -305,15 +321,9 @@ function draw()
         const mcx     = a.amplitude * Math.cos(a.frequency + axdelta);
         const mcy     = a.amplitude * Math.cos(a.frequency + aydelta);
         const mcz     = a.amplitude * Math.cos(a.frequency + azdelta);
-        const msx     = Math.sqrt(Math.max(0, 1 - square(a.frequency + axdelta)));
-        const msy     = Math.sqrt(Math.max(0, 1 - square(a.frequency + aydelta)));
-        const msz     = Math.sqrt(Math.max(0, 1 - square(a.frequency + azdelta)));
-        /*
         const msx     = a.amplitude * Math.sin(a.frequency * axdelta);
         const msy     = a.amplitude * Math.sin(a.frequency * aydelta);
         const msz     = a.amplitude * Math.sin(a.frequency * azdelta);
-        */
-        //pan.orient(mcx, 0, msx, 0.1);
 
         if (i % 2 == 0)
         {
