@@ -384,7 +384,7 @@ function draw()
     }
 }
 
-function mouseIsPressed()
+function mouseClicked()
 {
     show_help = true;
 }
