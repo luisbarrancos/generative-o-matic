@@ -3,6 +3,7 @@
   <head>
     <title>Colored Orbitals ML</title>
     <meta name="description" content="Colored Orbitals ML">
+    <link rel="stylesheet" href="style.css">
     <!-- main libs -->
     <script src="libraries/p5.js"></script> 
     <script src="libraries/p5.sound.js"></script> 
@@ -14,9 +15,37 @@
     <script src="palette.js"></script>
     <script src="orbital_states.js"></script>
     <script src="orbital_sentiment.js"></script>
-  </head>
-  <body>
-    <div id="canvas"></div>
-    <script src="sketch.js"></script>
-  </body>
-</html>
+<!--Style-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;500&display=swap');
+  </style>
+
+</head>
+<body>
+<button class="question"  onclick="instructions()"><h1><b>?</b></h1></button>
+<div id="text">
+  <h2>Voice Commands:</h2>
+  <ul>
+    <li>X Rotate / Y Rotate / Z Rotate / Stop</li>
+    <li>Warmer / Colder</li>
+    <li>Faster / Slower</li>
+    <li>Bigger / Smaller</li>
+    <li>Wider / Closer</li>
+    <li style="border-right: solid white 1px;">Help / Hide</li>
+</ul>
+  </div>
+  <div id="canvas"></div>
+  <script src="sketch.js"></script>
+</div>
+
+<script>
+function instructions() {
+  var x = document.getElementById("text");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+   

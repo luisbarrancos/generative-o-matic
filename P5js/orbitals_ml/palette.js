@@ -7,35 +7,35 @@ class Palette
     static #color_tables =
     [
         // start
-        "083d77,ebebd3,f4d35e,ee964b,f95738",
+        "68c2cc,32c1d1,29acba,50d0de,0d7985",//blue sky
         // shake
-        "fdffff,b10f2e,570000,280000,de7c5a",
+        "7fdb0d,acd180,92fa14,7b9956,7eb53c",//greens
         // wider
-        "ffbc42,d81159,8f2d56,218380,73d2de",
+        "945654,574848,ba8684,4d0806,e84b46",//reds
         // closer
-        "ef6461,e4b363,e8e9eb,e0dfd5,313638",
+        "c00ce8,aa2ac7,873699,bd85c9,8a6094",//purples
         // bigger
-        "ffae03,e67f0d,fe4e00,e9190f,ff0f80",
+        "cfb161,5c4811,302504,26200e,69592f",//brown
         // smaller
-        "3c1642,086375,1dd3b0,affc41,b2ff9e",
+        "826d23,f2ca3a,d1b44b,f0c322,d4a600",//yellow
         // faster
-        "0485e0,0f8796,0abf2e,6fa688,356e78",
+        "199135,4fa162,33bd53,5fba74,259940",//green
         // slower
-        "092120,00f7eb,2cc9c2,178782,163b39",
+        "371147,9d76ad,371645,ca8ae6,a470ba",//pink
         // stop
-        "003049,d62828,f77f00,fcbf49,eae2b7",
+        "c2704e,d46739,c4511f,944726,ba3902",//oranges
         // sentiment analysis ?
-        // positive, warm colors, jittery motion
-        "03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08",
-        // negative, cool colors, steady motion
-        "03045e,023e8a,0077b6,0096c7,00b4d8,48cae4,90e0ef,ade8f4,caf0f8",
-        // rotate on X, Y, Z, or translate on X, Y, Z
-        // rotate on X, with radians depending on strenght
-        "03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08",
-        // rotate on Y, with radians depending on strenght
-        "d9ed92,b5e48c,99d98c,76c893,52b69a,34a0a4,168aad,1a759f,1e6091,184e77",
-        // rotate on Z, with radians depending on strenght
-        "007f5f,2b9348,55a630,80b918,aacc00,bfd200,d4d700,dddf00,eeef20,ffff3f",
+        // positive,warm colors,jittery motion
+        "8a4a48,d49896,faa5a2,b33a36,a31510,db0223,2b0f13,820316,300108,bd0f29",//waaaaarm,red and stuff
+        // negative,cool colors,steady motion
+        "2a7dbd,5787ab,2f6e9e,1575bf,45f5f2,336363,34706f,0f6665,72fcfa,37739e",//coooold,blue and stuff
+        // rotate on x,y,z,or translate on x,y,z
+        // rotate on x,with radians depending on strenght
+        "7d7034,c7ad3c,f2dc77,b89e2c,66550a,8ca371,518219,bef77c,a6e063,90bf5a",//golds
+        // rotate on y,with radians depending on strenght
+        "f060df,fa39e3,f0a3e7,73486e,a683a2,4f1e8f,947bb5,8863b8,6a4699,a66ef0",//purple
+        // rotate on z,with radians depending on strenght
+        "9e2c06,822d11,c44d25,e36a42,e0a490,ab2020,ff511c,855749,db9079,945a48",//orange browns
     ]
 
     static palette_length = this.#color_tables.length;
