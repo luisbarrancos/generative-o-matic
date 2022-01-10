@@ -1,16 +1,16 @@
 "use strict";
 
 Array.prototype.random =
-function() {
+    function() {
     return this[Math.floor((Math.random() * this.length))];
 }
 
-let p            = [];
-const edge       = 350;
-const frame_rate = 25;
-const screen_width = 640;
+let p               = [];
+const edge          = 350;
+const frame_rate    = 25;
+const screen_width  = 640;
 const screen_height = 480;
-const axis        = [
+const axis          = [
     // +/- x
     [ 1, 0, 0 ],
     [ -1, 0, 0 ],
@@ -54,15 +54,15 @@ let palette = 0;
 let font    = null;
 let pts     = []
 
-// Sound
-let sound_track1, sound_track2;
+    // Sound
+    let sound_track1,
+    sound_track2;
 let play_soundtrack = false; // true
 //
 let carrier, modulator, reverb;
 let freq, ampl;
 let oscillator_playing = false;
-let sound_playing = false;
-
+let sound_playing      = false;
 
 const smoothing_period = 0.25;
 const max_amplitude    = 0.5;
@@ -76,7 +76,7 @@ function preload()
     // Load the model
     classifier = ml5.soundClassifier(sound_model + "model.json", ml_options);
     // load font for contextual help
-    font       = loadFont("assets/_decterm.ttf");
+    font = loadFont("assets/_decterm.ttf");
     // and a soundtrack
     sound_track1 = loadSound("assets/Minecraft.mp3");
     sound_track2 = loadSound("assets/Estica_Paulo.mp3");
@@ -104,18 +104,18 @@ function sound_setup()
     // we'll be hearing the carrier
     ampl = 1;
     freq = 2000;
-    
+
     carrier = new p5.Oscillator("sine");
     carrier.amp(0.5);
     carrier.freq(220); // carrier base frequency
     carrier.disconnect();
-    
+
     // modulated by this modulator
     modulator = new p5.Oscillator("sine");
     modulator.freq(freq);
     modulator.amp(ampl);
     modulator.disconnect();
-    
+
     // give some depth, Convolve seems heavier though. Try reverb
     // https://p5js.org/reference/#/p5.Reverb
     reverb = new p5.Reverb();
@@ -124,7 +124,7 @@ function sound_setup()
     // long delay with a short time gives a nice layered texture
     reverb.process(carrier, 15, 5, 0.1);
     reverb.connect();
-    
+
     carrier.start();
     modulator.start();
     carrier.amp(modulator);
@@ -140,7 +140,7 @@ function sonorize(radius, distance)
         // of the Y strip intersected particles.
         ampl = constrain(map(distance, 0, radius, 0, 0.35), 0, 0.5);
         modulator.amp(ampl, 0.1);
-        
+
         freq = constrain(map(distance, 0, radius, 20, 5000), 20, 100);
         modulator.freq(freq, 0.1);
         carrier.freq(map(distance, 0, radius, 20, 200), 20, 100);
@@ -185,7 +185,7 @@ function setup_text()
         simplifyThreshold: 0.0 // increase to remove collinear points
     })
     //text(label, -400, -200);
-    
+
     beginShape(POINTS)
     for (let i = 0; i < pts.length; i++) {
         const p = pts[i]
@@ -199,15 +199,15 @@ function setup_text()
     const c1 = color(Palette.hex2rgb(Palette.colors(0, palette, 50)));
     c1.setAlpha(40);
     fill(c1);
-    
+
     const infotext = "Voice Commands:\n\n" +
-    "X Rotate\nY Rotate\nZ Rotate\nStop\n" +
-    "Warmer | Colder\n" +
-    "Faster | Slower\n" +
-    "Bigger | Smaller\n" +
-    "Wider | Closer\n";
-    
-    text(infotext, width / 3 , height / 9);
+                     "X Rotate\nY Rotate\nZ Rotate\nStop\n" +
+                     "Warmer | Colder\n" +
+                     "Faster | Slower\n" +
+                     "Bigger | Smaller\n" +
+                     "Wider | Closer\n";
+
+    text(infotext, width / 3, height / 9);
     noFill();
     c1.setAlpha(255);
 }
@@ -364,10 +364,10 @@ function draw()
         oscillator_playing = true;
         sound_track1.pause();
     }
-    
+
     background(0);
     noFill();
-    
+
     if (show_help == true)
     {
         stroke(127);
@@ -382,20 +382,21 @@ function draw()
     for (let i = 0; i < p.length - 1; i++)
     {
         let a = p[i];
-        
+
         label_actions(a);
         a.edge();
         a.update();
-        
+
         stroke(Palette.colors(i, palette % Palette.palette_length, 50));
-        
+
         // well, avoid the inner loop, not neat, but solves it
         if (play_soundtrack == true)
         {
             for (let j = i + 1; j < p.length; j++)
             {
                 const b = p[j];
-                if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
+                if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z)
+                    < 1500)
                 {
                     line(a.x, a.y, a.z, b.x, b.y, b.z);
                 }
@@ -407,7 +408,8 @@ function draw()
             for (let j = i + 1; j < p.length; j++)
             {
                 const b = p[j];
-                const dd = square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
+                const dd =
+                    square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
                 if (dd < 1500)
                 {
                     if (i % (frame_rate * 2) == 0)
@@ -420,7 +422,7 @@ function draw()
         }
         const costheta = a.amplitude * Math.cos(a.frequency * rotangle);
         const sintheta = a.amplitude * Math.sin(a.frequency * rotangle);
-        
+
         if (i % 2 == 0)
         {
             push();
@@ -447,24 +449,24 @@ function draw()
             sphere(a.z * 0.0025 * a.size, 5, 5);
             pop();
         }
-        
+
         push();
         translate(a.x, a.y, a.z);
         translate(
             costheta * 0.05 * a.frequency,
             sintheta * 0.05 * a.frequency,
             costheta * 0.05 * a.frequency);
-            // stroke(Palette.colors(i, (palette + 3) % Palette.palette_length,
-            // 50));
-            strokeWeight(0.1);
-            sphere(a.y * 0.00125 * a.size, 3, 3);
-            pop();
+        // stroke(Palette.colors(i, (palette + 3) % Palette.palette_length,
+        // 50));
+        strokeWeight(0.1);
+        sphere(a.y * 0.00125 * a.size, 3, 3);
+        pop();
     }
 }
-    
+
 function mouseClicked()
 {
-    show_help = true;
+    show_help       = true;
     play_soundtrack = !play_soundtrack;
 }
 
@@ -474,7 +476,9 @@ function mousePressed()
     {
         sound_track1.pause();
         sound_playing = false;
-    } else {
+    }
+    else
+    {
         sound_track1.play();
         sound_playing = true;
     }

@@ -1,32 +1,14 @@
 class OrbitalSentiment
 {
-    constructor()
-    {
-        ;
-    }
+    constructor() { ; }
 
-    positive_sentiment()
-    {
-        ;
-    }
+    positive_sentiment() { ; }
 
-    negative_sentiment()
-    {
-        ;
-    }
+    negative_sentiment() { ; }
 
-    rotate_on_x(strenght)
-    {
-        ;
-    }
+    rotate_on_x(strenght) { ; }
 
-    rotate_on_y(strenght)
-    {
-        ;
-    }
+    rotate_on_y(strenght) { ; }
 
-    rotate_on_z(strenght)
-    {
-        ;
-    }
+    rotate_on_z(strenght) { ; }
 }
