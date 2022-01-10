@@ -55,11 +55,14 @@ let font    = null;
 let pts     = []
 
 // Sound
-let sound_track1, sound_track2, sound_playing = false;
+let sound_track1, sound_track2;
+let play_soundtrack = false; // true
 //
 let carrier, modulator, reverb;
 let freq, ampl;
-let oscillator_playing;
+let oscillator_playing = false;
+let sound_playing = false;
+
 
 const smoothing_period = 0.25;
 const max_amplitude    = 0.5;
@@ -136,13 +139,11 @@ function sonorize(radius, distance)
         // Change the modulator for the FM synthesis based on the x values
         // of the Y strip intersected particles.
         ampl = constrain(map(distance, 0, radius, 0, 0.35), 0, 0.5);
-        //ampl = map(distance, 0, radius, 0, 0.5);
         modulator.amp(ampl, 0.1);
         
-        freq = constrain(map(distance, 0, radius, 100, 5000), 20, 20000);
-        //freq = map(distance, 0, radius, 100, 1000);
+        freq = constrain(map(distance, 0, radius, 20, 5000), 20, 100);
         modulator.freq(freq, 0.1);
-        carrier.freq(map(distance, 0, radius, 100, 5000), 20, 200);
+        carrier.freq(map(distance, 0, radius, 20, 200), 20, 100);
     }
 }
 
@@ -158,10 +159,18 @@ function setup()
     classifier.classify(got_result);
     // initialize the shapes array
     init_object();
-    // start looping the soundtrack
-    //sound_track1.loop();
-    // and initialize the FM synthesis
-    sound_setup();
+
+    if (play_soundtrack == true)
+    {
+        // start looping the soundtrack
+        sound_track1.loop();
+        sound_track1.setVolume(0.5);
+    }
+    else
+    {
+        // or initialize the FM synthesis
+        sound_setup();
+    }
 }
 
 function setup_text()
@@ -239,45 +248,66 @@ function label_actions(a)
     {
         palette = 4;
         a.bigger();
-        ampl = constrain(ampl + 0.05, 0, max_amplitude);
-        modulator.amp(ampl, smoothing_period);
+        if (play_soundtrack == false)
+        {
+            ampl = constrain(ampl + 0.05, 0, max_amplitude);
+            modulator.amp(ampl, smoothing_period);
+        }
     }
     if (label === "Smaller")
     {
         palette = 5;
         a.smaller();
-        ampl = constrain(ampl - 0.05, 0, max_amplitude);
-        modulator.amp(ampl, smoothing_period);
+        if (play_soundtrack == false)
+        {
+            ampl = constrain(ampl - 0.05, 0, max_amplitude);
+            modulator.amp(ampl, smoothing_period);
+        }
     }
     if (label === "Faster")
     {
         palette = 6;
         a.faster();
-        freq = constrain(freq + 10, min_freq, max_freq);
-        modulator.freq(freq, smoothing_period);
+        if (play_soundtrack == false)
+        {
+            freq = constrain(freq + 10, min_freq, max_freq);
+            modulator.freq(freq, smoothing_period);
+        }
     }
     if (label === "Slower")
     {
         palette = 7;
         a.slower();
-        freq = constrain(freq - 10, min_freq, max_freq);
-        modulator.freq(freq, smoothing_period);
+        if (play_soundtrack == false)
+        {
+            freq = constrain(freq - 10, min_freq, max_freq);
+            modulator.freq(freq, smoothing_period);
+        }
     }
     if (label === "Warmer")
     {
         palette = 9;
-        carrier.setType("sine");
+        if (play_soundtrack == false)
+        {
+            carrier.setType("sine");
+        }
     }
     if (label === "Colder")
     {
         palette = 10;
-        carrier.setType("square");
+        if (play_soundtrack == false)
+        {
+            carrier.setType("square");
+        }
     }
     if (label === "Stop")
     {
         a.stop();
-        // carrier.stop();
-        // modulator.stop();
+        if (play_soundtrack == false)
+        {
+            // carrier.stop();
+            // modulator.stop();
+        }
     }
 }
 
@@ -320,6 +350,20 @@ function draw()
     rotate_screen(f);
     const tdelta   = TWO_PI * f * 0.1;
     const rotangle = tdelta * 0.000005;
+
+    if (play_soundtrack == true)
+    {
+        carrier.stop();
+        modulator.stop();
+        oscillator_playing = false;
+    }
+    else if (!oscillator_playing)
+    {
+        carrier.start();
+        modulator.start();
+        oscillator_playing = true;
+        sound_track1.pause();
+    }
     
     background(0);
     noFill();
@@ -345,21 +389,33 @@ function draw()
         
         stroke(Palette.colors(i, palette % Palette.palette_length, 50));
         
-        for (let j = i + 1; j < p.length; j++)
+        // well, avoid the inner loop, not neat, but solves it
+        if (play_soundtrack == true)
         {
-            const b = p[j];
-            
-            const dd = square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
-
-            if (dd < 1500)
+            for (let j = i + 1; j < p.length; j++)
             {
-                if (i % (frame_rate * 2) == 0)
+                const b = p[j];
+                if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z) < 1500)
                 {
-                    // Every 1s, update with the last vx, vy, vz values. This should
-                    // result in a slow crescendo until a reset happens.
-                    sonorize(1500, dd);
+                    line(a.x, a.y, a.z, b.x, b.y, b.z);
                 }
-                line(a.x, a.y, a.z, b.x, b.y, b.z);
+            }
+        }
+        else
+        {
+            // sonorization
+            for (let j = i + 1; j < p.length; j++)
+            {
+                const b = p[j];
+                const dd = square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
+                if (dd < 1500)
+                {
+                    if (i % (frame_rate * 2) == 0)
+                    {
+                        sonorize(1500, dd);
+                    }
+                    line(a.x, a.y, a.z, b.x, b.y, b.z);
+                }
             }
         }
         const costheta = a.amplitude * Math.cos(a.frequency * rotangle);
@@ -409,11 +465,12 @@ function draw()
 function mouseClicked()
 {
     show_help = true;
+    play_soundtrack = !play_soundtrack;
 }
 
 function mousePressed()
 {
-    if (soundTrack.isPlaying())
+    if (sound_track1.isPlaying())
     {
         sound_track1.pause();
         sound_playing = false;
