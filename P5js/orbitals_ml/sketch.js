@@ -8,8 +8,8 @@ Array.prototype.random =
 let p               = [];
 const edge          = 350;
 const frame_rate    = 25;
-const screen_width  = 640;
-const screen_height = 480;
+const screen_width  = 1280;
+const screen_height = 720;
 const axis          = [
     // +/- x
     [ 1, 0, 0 ],
