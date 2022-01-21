@@ -22,7 +22,7 @@ const colors =
         .map((a) => "#" + a);
 
 const colors2 =
-"03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08"
+    "03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08"
     .split(",")
     .map((a) => "#" + a);
 
@@ -97,7 +97,7 @@ function draw()
 
             let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
             //console.log("color c " + c);
-            c2.setAlpha(10);
+            c2.setAlpha(100);
             fill(c2);
             blendMode(ADD);
             ellipse(screen_width - 130, screen_height - 180, xx / bx, yy / by);

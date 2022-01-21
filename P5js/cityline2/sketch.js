@@ -21,12 +21,6 @@ const colors =
         .split(",")
         .map((a) => "#" + a);
 
-const colors2 =
-"03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08"
-    .split(",")
-    .map((a) => "#" + a);
-
-
 function setup()
 {
     createCanvas(screen_width, screen_height);//, WEBGL);
@@ -94,14 +88,8 @@ function draw()
             const xx = x - half_width + nx;
             const yy = y - half_height + ny;
 
-
-            let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
-            //console.log("color c " + c);
-            c2.setAlpha(10);
-            fill(c2);
-            blendMode(ADD);
+            fill(255);
             ellipse(screen_width - 130, screen_height - 180, xx / bx, yy / by);
-            blendMode(BLEND);
             fill(c);
 
             //curveVertex(x, y);

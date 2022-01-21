@@ -17,15 +17,9 @@ let xstep, ystep;
 let half_width, half_height;
 
 const colors =
-    "264653,287271,2a9d8f,8ab17d,babb74,e9c46a,efb366,f4a261,ee8959,e76f51"
-        .split(",")
+    "001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226-d9ed92-b5e48c-99d98c-76c893-52b69a-34a0a4-168aad-1a759f-1e6091-184e77-00296b-003f88-00509d-fdc500-ffd500"
+        .split("-")
         .map((a) => "#" + a);
-
-const colors2 =
-"03071e,370617,6a040f,9d0208,d00000,dc2f02,e85d04,f48c06,faa307,ffba08"
-    .split(",")
-    .map((a) => "#" + a);
-
 
 function setup()
 {
@@ -41,7 +35,6 @@ function setup()
 
     xstep = screen_width % numsteps;
     ystep = screen_height % numsteps;
-    ystep *= 0.957;
     half_width = screen_width / 2;
     half_height = screen_height / 2;
 
@@ -84,7 +77,7 @@ function draw()
             const nx = Math.cos(bx) * 50 + xstep / 2;
             const ny = Math.sin(by) * 50 + ystep / 2;
 
-            let c = hexToRgb(colors[Math.ceil(Math.abs(y)) % colors.length]);
+            let c = hexToRgb(colors[y % colors.length]);
             //console.log("color c " + c);
             c.setAlpha(100);
             //stroke(c);
@@ -93,16 +86,6 @@ function draw()
 
             const xx = x - half_width + nx;
             const yy = y - half_height + ny;
-
-
-            let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
-            //console.log("color c " + c);
-            c2.setAlpha(10);
-            fill(c2);
-            blendMode(ADD);
-            ellipse(screen_width - 130, screen_height - 180, xx / bx, yy / by);
-            blendMode(BLEND);
-            fill(c);
 
             //curveVertex(x, y);
             //curveVertex(xx, yy);
