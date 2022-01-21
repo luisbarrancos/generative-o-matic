@@ -97,7 +97,7 @@ function draw()
 
             let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
             //console.log("color c " + c);
-            c2.setAlpha(10);
+            c2.setAlpha(15);
             fill(c2);
             blendMode(ADD);
             ellipse(screen_width - 130, screen_height - 180, xx / bx, yy / by);
@@ -114,33 +114,4 @@ function draw()
             //        40 * noise(y + t + m, x + t + m));
         }
     }
-    //endShape();
-    /*
-    for (let i = n; i >= 0; i--)
-    {
-        fill(colors[i % colors.length]);
-
-        const size      = radius + i * inter;
-        const k         = kMax * sqrt(i / n);
-        const noisiness = maxNoise * noiseProg(i / n);
-        blob(size, 0, 0, k, t + i * step, noisiness);
-    }
-    */
-}
-
-function blob(size, xCenter, yCenter, k, t, noisiness)
-{
-    beginShape();
-
-    for (let theta = 0; theta <= 2 * (Math.PI + angleStep); theta += angleStep)
-    {
-        const r1 = Math.cos(theta);
-        const r2 = Math.sin(theta);
-        const r  = size + noise(k * (r1 + 1), k * (r2 + 1), t) * noisiness;
-        const x  = xCenter + r * r1;
-        const y  = yCenter + r * r2;
-        curveVertex(x, y)
-    }
-
-    endShape();
 }
