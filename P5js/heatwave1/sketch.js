@@ -104,20 +104,15 @@ function draw()
         }
     }
 
-    if (frameCount % 25 == 0)
-    {
-        save(`frame_${frameCount}.png`);
-    }
-    
-    
+
 }
 
-function keyTyped()
+function keyPressed()
 { 
     // Pressing the "q" key to
     // save the image
     if (key === "q")
     {
-      img.save("saved-image", "png");
+        save(`frame_${frameCount}.png`);
     }
-  }
+}
