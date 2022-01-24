@@ -5,6 +5,10 @@ and follows the templated model given by the module authors, namely, copying
 the custom host and server sketches into the ```p5-multiplayer/public``` 
 directory, overwriting the existing sketches, and start the nodejs server.
 
+Alternatively you can access the online demo on Azure Websites here:
+https://soundproject.azurewebsites.net/host.html
+
+
 ## Step by step
 
  * copy [index.js](https://github.com/luisbarrancos/generative-o-matic/blob/master/P5js/networked_cymatics/index.js) to the directory p5- multiplayer/public/
