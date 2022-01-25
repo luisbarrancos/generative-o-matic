@@ -30,10 +30,12 @@ class Game
 
         this.players[id].oscillators = new Oscillators();
 
-        this.players[id].update_frequency_ranges(
+        this.players[id].oscillators.update_frequency_ranges(
             this.players[id].frequency_range.min_frequency,
             this.players[id].frequency_range.max_frequency
         );
+
+        this.players[id].oscillators.start();
 
         this.id++;
         this.harmonic++;
