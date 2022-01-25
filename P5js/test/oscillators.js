@@ -27,14 +27,15 @@ class Oscillators
                 osc.setType("sine");
                 // TODO replace this random() call
                 osc.freq(Math.round(random(this.min_frequency, this.max_frequency)));
-                osc.amp(1.0 / this.num_oscillators); // normalize
+                osc.amp(1.0 / this.num_oscillators) / this.num_players; // normalize
                 // we can start, or pipe to effects
                 osc.start();
 
                 if (effects)
                 {
-                    let reverb = new p5.Reverb(10, 1);
-                    let delay = new p5.Delay(5, 5);
+                    // delay connect to reverb, reverb to osc
+                    let reverb = new p5.Reverb(3, 2);
+                    let delay = new p5.Delay(0.12, 0.7, 1500);
                     delay.disconnect()
                     delay.connect(reverb);
                     osc.disconnect();
