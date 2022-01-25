@@ -40,6 +40,7 @@ class Game
         */
 
         this.players[id].oscillators.create();
+        this.players[id].oscillators.start();
 
         this.id++;
         this.harmonic++;
