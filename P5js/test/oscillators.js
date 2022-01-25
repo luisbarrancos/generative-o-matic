@@ -1,4 +1,6 @@
 
+const effects = false;
+
 class Oscillators
 {
     constructor(min_frequency = 200, max_frequency = 3000)
@@ -28,16 +30,22 @@ class Oscillators
                 // we can start, or pipe to effects
                 osc.start();
 
-                //let reverb = new p5.Reverb();
-                //let delay = new p5.Delay();
-                //delay.disconnect()
-                //delay.connect(reverb);
-                //osc.disconnect();
-                //osc.connect(delay);
-
+                if (effects)
+                {
+                    let reverb = new p5.Reverb();
+                    let delay = new p5.Delay();
+                    delay.disconnect()
+                    delay.connect(reverb);
+                    osc.disconnect();
+                    osc.connect(delay);
+                }
                 this.oscillators.push(osc);
-                //this.delays.push(delay);
-                //this.reverbs.push(reverb);
+
+                if (effects)
+                {
+                    this.delays.push(delay);
+                    this.reverbs.push(reverb);
+                }
             }
             this.playing = true;
         }
