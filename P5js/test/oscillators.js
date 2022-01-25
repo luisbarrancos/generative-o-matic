@@ -53,20 +53,20 @@ class Oscillators
     {
         if (this.oscillators.length != 0 && this.playing == false)
         {
-            for (oscillator in oscillators)
+            for (let i = 0; i < this.oscillators.length; i++)
             {
-                oscillator.start();
+                this.oscillators[i].start();
             }
         }
     }
 
     stop()
     {
-        if (this.oscillators.length != 0 && this.playing == true)
+        if (this.oscillators.length != 0 && this.playing == false)
         {
-            for (oscillator in oscillators)
+            for (let i = 0; i < this.oscillators.length; i++)
             {
-                oscillator.stop();
+                this.oscillators[i].stop();
             }
         }
     }

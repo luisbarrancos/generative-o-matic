@@ -1,11 +1,15 @@
 "use strict";
 
+// TODO
+// just move sketch related essentials to static data in a
+// globals class.
+
 // essential UI parameters
 const screen_width  = 512;
 const screen_height = 512;
 const frame_rate    = 25;
 // enable to debug
-const debug = false;
+const debug = true;
 
 // network tests
 const serverIp   = "192.168.0.3";

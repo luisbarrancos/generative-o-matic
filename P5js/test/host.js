@@ -29,7 +29,7 @@ const half_width = screen_width / 2;
 const half_height = screen_height / 2;
 
 // enable to debug
-const debug = false;
+const debug = true;
 p5.disableFriendlyErrors = (debug == false) ? true : false;
 
 // sound synthesis related
@@ -37,7 +37,7 @@ const absolute_min_frequency = 20;
 const absolute_max_frequency = 20000; // for sound step
 const fft_samples = 64;
 
-// We'll create an array of 50 oscillators then on a time basis change
+// We'll create an array of 10 oscillators then on a time basis change
 // the wave type, frequency, amplitude. Individually it will be 
 // imperceptible, but combined it will slowly evolve over time
 // TODO: move to class
@@ -181,6 +181,7 @@ function processMouseClick(data)
 {
     if (data != null)
     {
+        /*
         game.players[data.id].xcoord = data.xcoord;
         game.players[data.id].ycoord = data.ycoord;
 
@@ -197,7 +198,7 @@ function processMouseClick(data)
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
         //game.updateCymatics(data.id);
-
+            */
         if (debug)
         {
             console.log(`${data.id} XY received: X = ${data.xcoord}, ${data.id} Y = ${data.ycoord}`);
@@ -210,6 +211,7 @@ function processEmotions(data)
 {
     if (data != null)
     {
+        /*
         game.players[data.id].emotion = data.emotion;
         game.players[data.id].confidence = data.confidence;
 
@@ -243,6 +245,7 @@ function processEmotions(data)
             console.log(`${data.id} emotion = ${data.emotion},
             confidence = ${data.confidence}`);
         }
+        */
     }
 }
 
@@ -270,7 +273,7 @@ function generate_qrcode(qr_input_string, margin, size)
 
 function mousePressed()
 {
-    userStartAudio();
+    //userStartAudio();
 }
 
 /*
