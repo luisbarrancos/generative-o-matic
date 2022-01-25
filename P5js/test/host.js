@@ -275,12 +275,12 @@ function generate_qrcode(qr_input_string, margin, size)
 
 function mousePressed()
 {
-    //userStartAudio();
+    userStartAudio();
 }
 
-/*
+
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
 }
-*/
+

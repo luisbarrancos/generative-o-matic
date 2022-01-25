@@ -1,11 +1,11 @@
 
-const effects = true;
+const effects = false;
 
 class Oscillators
 {
-    constructor(min_frequency = 200, max_frequency = 3000)
+    constructor(min_frequency = 40, max_frequency = 400)
     {
-        this.num_oscillators = 10;
+        this.num_oscillators = 15;
         this.oscillators = [];
         this.delays = [];
         this.reverbs = [];
@@ -33,8 +33,8 @@ class Oscillators
 
                 if (effects)
                 {
-                    let reverb = new p5.Reverb();
-                    let delay = new p5.Delay();
+                    let reverb = new p5.Reverb(10, 1);
+                    let delay = new p5.Delay(5, 5);
                     delay.disconnect()
                     delay.connect(reverb);
                     osc.disconnect();

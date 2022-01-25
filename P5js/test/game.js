@@ -11,7 +11,7 @@ class Game
         this.harmonic   = 1;
     }
     
-    add(id, min_frequency = 200, max_frequency = 3000)
+    add(id, min_frequency = 40, max_frequency = 400)
     {
         this.players[id] = {};
         this.players[id].id = "p" + this.id;
