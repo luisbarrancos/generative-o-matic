@@ -184,13 +184,13 @@ function processMouseClick(data)
         game.players[data.id].xcoord = data.xcoord;
         game.players[data.id].ycoord = data.ycoord;
 
-        const frequency = clamp(
+        const frequency = MathUtils.clamp(
             map(data.xcoord, 0, screen_width,
                 game.players[data.id].frequency_range.min_frequency,
                 game.players[data.id].frequency_range.max_frequency),
                 absolute_min_frequency, absolute_max_frequency);
 
-        const amplitude = clamp(
+        const amplitude = MathUtils.clamp(
             map(data.ycoord, 0, screen_height, 0.001, 1.0),
             0.0, 1.0);
 
