@@ -16,7 +16,7 @@ Run http-server -c-1 -p80 to start server on open port 80.
 // const serverIp      = 'https://yourservername.herokuapp.com';
 // const serverIp      = 'https://yourprojectname.glitch.me';
 
-const serverIp   = "127.0.0.1";
+const serverIp   = "192.168.0.3";
 const serverPort  = "3000";
 const local = true;
 let game;
@@ -27,19 +27,11 @@ const screen_height = 512;
 const frame_rate    = 25;
 const half_width = screen_width / 2;
 const half_height = screen_height / 2;
-const two_pi        = 2 * Math.PI;
 
 // enable to debug
 const debug = false;
 p5.disableFriendlyErrors = (debug == false) ? true : false;
 
-// visuals related
-let cymatics;
-let num_steps    = 8;
-let angle_step   = two_pi / num_steps;
-const min_spokes = 6;
-const max_spokes = 32;
-const realistic = false; // leave it
 
 // sound synthesis related
 const min_frequency = 200;
@@ -54,6 +46,12 @@ const fft_samples   = 64;  // max 1024
 let song;
 let osc;
 let fft;
+
+// We'll create an array of 50 oscillators then on a time basis change
+// the wave type, frequency, amplitude. Individually it will be 
+// imperceptible, but combined it will slowly evolve over time
+// TODO: move to class
+
 
 // QR code related stuff
 let qr_img;
@@ -86,7 +84,6 @@ function setup()
     let canvas = createCanvas(screen_width, screen_height);
     canvas.position(0, 0);
     angleMode(RADIANS);
-    //blendMode(ADD);
     frameRate(frame_rate);
     background(0);
 
@@ -177,11 +174,6 @@ function onReceiveData(data)
         if (data.type === "player_color")
         {
             game.setColor(data.id, data.r * 255, data.g * 255, data.b * 255);
-        }
-        else if (data.type === "emotion_results")
-        {
-            processEmotions(data);
-            // game method to process emotion results for cymatics   
         }
         else if (data.type === "input_coords")
         {
@@ -282,249 +274,9 @@ function processEmotions(data)
     }
 }
     
-////////////
-// Game
-// This simple placeholder game makes use of p5.play
-class Game
-{
-    constructor(w, h)
-    {
-        this.w          = w;
-        this.h          = h;
-        this.players	= {};
-        this.numPlayers	= 0;
-        this.id         = 0;
-        this.harmonic   = 1;
-        // this.soundwaves = new SoundWaves();
-    }
-    
-    add(id)
-    {
-        this.players[id] = {};
-        this.players[id].id = "p" + this.id;
-        this.players[id].color = color(255, 255, 255);
 
-        print(this.players[id].id + " added.");
-
-        // we have this.players[id].emotion | confidence | xcoord | ycoord
-        // from earlier processMouseClick() and processEmotions()
-        //
-        this.players[id].frequency_range = {
-            "min_frequency" : this.harmonic * min_frequency,
-            "max_frequency" : this.harmonic * max_frequency
-        };
-        this.players[id].soundwave = new SoundWave();
-        this.players[id].soundwave.start();
-
-        // main cymatic, per player
-        this.players[id].cymatic = new Cymatic();
-
-        // each player gets an harmonic, player one is the fundamental frequency
-        // so add the min, max frequency range, and increase by the harmonic
-        //this.soundwaves.add(this.players[id].id);
-        // to separate frequencies a bit, add a random seed for a 
-        // frequency displacement or offset for each player
-        // if it becomes non-melodical we can add a simple
-        this.id++;
-        this.harmonic++;
-        this.numPlayers++;
-        // add sound wave for each player
-    }
-
-    setColor(id, r, g, b)
-    {
-        this.players[id].color = color(r, g, b);        
-        print(this.players[id].id + " color added.");
-    }
-
-    getColor(id)
-    {
-        return this.players[id].color;
-    }
-        
-    remove(id)
-    {
-        this.players[id].soundwave.stop();
-        delete this.players[id];
-        this.numPlayers--;
-    }
-
-    checkId(id)
-    {
-        return (id in this.players) ? true : false;
-    }
-        
-    printPlayerIds(x, y)
-    {
-        push();
-        noStroke();
-        let c = color(255, 180);
-        fill(c);
-        textSize(12);
-        text(`# players: ${this.numPlayers}`, x, y);
-
-        y = y + 14;
-
-        for (let id in this.players)
-        {
-            c = this.players[id].color;
-            c.setAlpha(180);
-            fill(c);
-            text(`player ${this.players[id].id}`, x, y);
-            y += 16;
-        }
-        c = color(255, 180);
-        fill(c);
-        pop();
-    }
-
-    updateSoundWaves(id, frequency, amplitude)
-    {
-        if (debug)
-        {
-            console.log(`freq = ${frequency}, amp = ${amplitude}`);
-        }
-        this.players[id].soundwave.update(frequency, amplitude);
-    }
-
-    updateWaveType(id, wavetype, confidence)
-    {
-        this.players[id].soundwave.change_type(wavetype);
-        this.players[id].soundwave.scale_frequency(confidence);
-    }
-
-    updateCymatics(id)
-    {
-        this.players[id].cymatic.update_frequency(
-            this.players[id].soundwave.frequency(),
-            this.players[id].frequency_range);
-
-        //this.players[id].cymatic.set_color(this.players[id].color);
-    }
-
-    draw_cymatic(id)
-    {
-        /*
-        this.players[id].cymatic.update_frequency(
-            this.players[id].soundwave.frequency(),
-            this.players[id].frequency_range);
-            */
-        this.players[id].cymatic.set_color(this.getColor(id));
-        this.players[id].cymatic.draw(this.players[id].soundwave.waveform());
-    }
-
-    draw()
-    {
-        for (let id in game.players)
-        {
-            this.draw_cymatic(id);
-        }
-    }
-}
 
 // Group of soundwaves, player soundwaves
-
-// sound wave, create an oscillator if there is no player oscillator running
-class SoundWave
-{
-    constructor()
-    {
-        this.carrier = new p5.Oscillator();
-        this.carrier.freq(220);
-        this.carrier.setType("sine");
-        this.carrier.amp(0.5);
-        this.carrier.start();
-        
-        this.osc = new p5.Oscillator();
-        this.osc.disconnect();
-        this.osc.freq(30);
-        this.osc.setType("sine");
-        this.osc.amp(0.5);
-
-        this.reverb = new p5.Reverb();
-        this.delay = new p5.Delay();
-        this.delay.disconnect()
-
-        this.playing = false;
-        this.samples = fft_samples;
-    }
-
-    start()
-    {
-        if (this.playing == false)
-        {
-            this.carrier.start();
-            this.osc.start();
-            this.carrier.freq(this.osc);
-
-            this.delay.connect(this.reverb);
-            this.carrier.disconnect();
-            this.carrier.connect(this.delay);
-
-            //this.osc.start();
-            this.playing = true;
-            this.fft = new p5.FFT(0, this.samples);
-            this.fft.setInput(this.osc);
-        }
-    }
-
-    stop()
-    {
-        if (this.playing == true)
-        {
-            this.carrier.stop();
-            this.osc.stop();
-            this.playing = false;
-        }
-    }
-
-    update(frequency, amplitude)
-    {
-        if (this.playing == true)
-        {
-            // Ensure valid ranges, and wave types
-            // freq = [10-22050], ampl = [0,1], type = [sine, square, triangle, sawtooth]
-            this.osc.freq(frequency);
-            this.osc.amp(amplitude);
-        }
-    }
-
-    change_type(wavetype)
-    {
-        if (this.playing == true && wavetype != null)
-        {
-            // Ensure valid ranges, and wave types
-            // let freq = [10-22050], ampl = [0,1], type = [sine, square, triangle, sawtooth]
-            this.osc.setType(wavetype);
-        }
-    }
-
-    scale_frequency(scale)
-    {
-        if (this.playing == true)
-        {
-            let frequency = this.osc.getFreq();
-            this.osc.freq(clamp((scale + 0.1) * frequency, min_frequency, max_frequency));
-            this.carrier.freq(map(scale*scale, 0.1, 0.5, 400, 4000));
-        }
-    }
-
-    frequency()
-    {
-        if (this.playing == true) return this.osc.getFreq();
-    }
-
-    amplitude()
-    {
-        if (this.playing == true) return this.osc.getAmp();
-    }
-
-    waveform()
-    {
-        if (this.playing == true) return this.fft.waveform();
-    }
-}
-
 // foreach: update freq, data, and start/stop if player leaves, enters
 /*
 class SoundWaves
