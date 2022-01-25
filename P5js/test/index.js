@@ -13,8 +13,8 @@ const debug = true;
 
 // network tests
 const serverIp   = "192.168.0.3";
-const serverPort  = "3000";
-const local = true;
+const serverPort = "3000";
+const local      = true;
 
 // player aux functions
 let player_color, player_color_dim;
@@ -68,7 +68,7 @@ function draw()
 {
     background(player_colors["dimmed_color"], 50);
 
-    //if (isClientConnected(display = true))
+    // if (isClientConnected(display = true))
     if (isClientConnected())
     {
         ;

@@ -1,7 +1,7 @@
 /*
 p5.multiplayer - HOST
 
-This 'host' sketch is intended to be run in desktop browsers. 
+This 'host' sketch is intended to be run in desktop browsers.
 It connects to a node server via socket.io, from which it receives
 rerouted input data from all connected 'clients'.
 
@@ -17,28 +17,28 @@ Run http-server -c-1 -p80 to start server on open port 80.
 // const serverIp      = 'https://yourprojectname.glitch.me';
 
 const serverIp   = "192.168.0.3";
-const serverPort  = "3000";
-const local = true;
+const serverPort = "3000";
+const local      = true;
 let game;
 
 // essential UI parameters
 const screen_width  = 512;
 const screen_height = 512;
 const frame_rate    = 25;
-const half_width = screen_width / 2;
-const half_height = screen_height / 2;
+const half_width    = screen_width / 2;
+const half_height   = screen_height / 2;
 
 // enable to debug
-const debug = true;
+const debug              = true;
 p5.disableFriendlyErrors = (debug == false) ? true : false;
 
 // sound synthesis related
 const absolute_min_frequency = 20;
 const absolute_max_frequency = 20000; // for sound step
-const fft_samples = 64;
+const fft_samples            = 64;
 
 // We'll create an array of 10 oscillators then on a time basis change
-// the wave type, frequency, amplitude. Individually it will be 
+// the wave type, frequency, amplitude. Individually it will be
 // imperceptible, but combined it will slowly evolve over time
 // TODO: move to class
 
@@ -47,7 +47,6 @@ let qr_img;
 
 // an HTML div to display it in:
 let tagDiv;
-
 
 function preload()
 {
@@ -81,16 +80,16 @@ function draw()
     fill(255, 127, 50);
     background(0);
 
-    if (isHostConnected(display=true))
+    if (isHostConnected(display = true))
     {
         // Host/Game draw here. --->
         // Display player IDs in top left corner
         game.printPlayerIds(5, 20);
-        
+
         // Update and draw game objects
-        //game.draw();
+        // game.draw();
         // <----
-        //game.draw();
+        // game.draw();
     }
 
     displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);
@@ -104,17 +103,17 @@ function onClientConnect(data)
     {
         console.log(`${data.id} has connected.`);
     }
-    
+
     if (!game.checkId(data.id))
     {
         game.add(data.id);
-    }    
+    }
     // <----
 }
-    
+
 function onClientDisconnect(data)
 {
-    // Client disconnect logic here. --->    
+    // Client disconnect logic here. --->
     if (game.checkId(data.id))
     {
         game.remove(data.id);
@@ -127,7 +126,10 @@ function displayCustomAddress(textcolor, font_size, xpos, ypos)
     push();
     fill(textcolor);
     textSize(font_size);
-    text(`Enter the room at : ${serverIp}/?=${roomId} or scan the QR code`, xpos, ypos);
+    text(
+        `Enter the room at : ${serverIp}/?=${roomId} or scan the QR code`,
+        xpos,
+        ypos);
     pop();
 }
 
@@ -136,7 +138,7 @@ function displayCustomAddress(textcolor, font_size, xpos, ypos)
 // call method that changes game state
 // so the game object must contain the game state, the cymatics
 //
-    
+
 function onReceiveData(data)
 {
     if (data != null)
@@ -164,12 +166,12 @@ function onReceiveData(data)
         */
     }
 }
-    
+
 // This is included for testing purposes to demonstrate that
 // messages can be sent from a host back to all connected clients
 function mousePressed()
 {
-    sendData("timestamp", { timestamp: millis() });
+    sendData("timestamp", {timestamp : millis()});
 }
 
 ////////////
@@ -177,7 +179,7 @@ function mousePressed()
 // function that calls method of globally accessible game object which
 // was declared outside any method, globally, but instantiated within setup()
 //
-    
+
 function processMouseClick(data)
 {
     if (data != null)
@@ -185,25 +187,29 @@ function processMouseClick(data)
         game.players[data.id].xcoord = data.xcoord;
         game.players[data.id].ycoord = data.ycoord;
 
-        const frequency = MathUtils.clamp(Math.round(
-            map(data.xcoord, 0, screen_width,
-                game.players[data.id].frequency_range.min_frequency,
-                game.players[data.id].frequency_range.max_frequency)),
-                absolute_min_frequency, absolute_max_frequency);
+        const frequency = MathUtils.clamp(
+            Math.round(
+                map(data.xcoord,
+                    0,
+                    screen_width,
+                    game.players[data.id].frequency_range.min_frequency,
+                    game.players[data.id].frequency_range.max_frequency)),
+            absolute_min_frequency,
+            absolute_max_frequency);
 
         const amplitude = MathUtils.clamp(
-            map(data.ycoord, 0, screen_height, 0.001, 1.0),
-            0.0, 1.0);
+            map(data.ycoord, 0, screen_height, 0.001, 1.0), 0.0, 1.0);
 
-        log(`processMouseClick: Frequency = ${frequency}, amplitude = ${amplitude}`);
+        log(`processMouseClick: Frequency = ${frequency}, amplitude = ${
+            amplitude}`);
 
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
-
-        //game.updateVisuals(data.id);
+        // game.updateVisuals(data.id);
         if (debug)
         {
-            console.log(`${data.id} XY received: X = ${data.xcoord}, ${data.id} Y = ${data.ycoord}`);
+            console.log(`${data.id} XY received: X = ${data.xcoord}, ${
+                data.id} Y = ${data.ycoord}`);
         }
     }
 }
@@ -251,8 +257,6 @@ function processEmotions(data)
     }
 }
 
-
-
 // Displays server address in lower left of screen
 function room_url(roomid = null)
 {
@@ -278,9 +282,7 @@ function mousePressed()
     userStartAudio();
 }
 
-
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
 }
-

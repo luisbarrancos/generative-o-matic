@@ -5,16 +5,16 @@ class Game
     {
         this.w          = w;
         this.h          = h;
-        this.players	= {};
-        this.numPlayers	= 0;
+        this.players    = {};
+        this.numPlayers = 0;
         this.id         = 0;
         this.harmonic   = 1;
     }
-    
+
     add(id, min_frequency = 40, max_frequency = 400)
     {
-        this.players[id] = {};
-        this.players[id].id = "p" + this.id;
+        this.players[id]       = {};
+        this.players[id].id    = "p" + this.id;
         this.players[id].color = color(255, 255, 255);
 
         //
@@ -22,10 +22,11 @@ class Game
 
         // create oscilaltors array from frequency assigned, per harmonic
         // player1 gets the fundamental wave
-        this.players[id].frequency_range =
-        {
-            "min_frequency" : MathUtils.clamp(this.harmonic * min_frequency, 20, 20000),
-            "max_frequency" : MathUtils.clamp(this.harmonic * max_frequency, 20, 20000),
+        this.players[id].frequency_range = {
+            "min_frequency" :
+                MathUtils.clamp(this.harmonic * min_frequency, 20, 20000),
+            "max_frequency" :
+                MathUtils.clamp(this.harmonic * max_frequency, 20, 20000),
         };
 
         this.players[id].oscillators = new Oscillators(
@@ -50,15 +51,12 @@ class Game
 
     setColor(id, r, g, b)
     {
-        this.players[id].color = color(r, g, b);        
+        this.players[id].color = color(r, g, b);
         print(this.players[id].id + " color added.");
     }
 
-    getColor(id)
-    {
-        return this.players[id].color;
-    }
-        
+    getColor(id) { return this.players[id].color; }
+
     remove(id)
     {
         this.players[id].oscillators.stop();
@@ -69,11 +67,8 @@ class Game
         this.harmonic = Math.max(1, this.harmonic);
     }
 
-    checkId(id)
-    {
-        return (id in this.players) ? true : false;
-    }
-        
+    checkId(id) { return (id in this.players) ? true : false; }
+
     printPlayerIds(x, y)
     {
         push();
@@ -98,18 +93,17 @@ class Game
         pop();
     }
 
-    randomizeOscillators(id)
-    {
-        this.players[id].oscillators.randomize();
-    }
+    randomizeOscillators(id) { this.players[id].oscillators.randomize(); }
 
     updateSoundWaves(id, frequency, amplitude, type)
     {
         if (debug)
         {
-            console.log(`freq = ${frequency}, amp = ${amplitude}, type = ${type}`);
+            console.log(
+                `freq = ${frequency}, amp = ${amplitude}, type = ${type}`);
         }
-        this.players[id].oscillators.update_waveform(frequency, amplitude, type);
+        this.players[id].oscillators.update_waveform(
+            frequency, amplitude, type);
     }
 
     updateWaveType(id, wavetype)
@@ -138,10 +132,7 @@ class Game
         return this.players[id].oscillators.energy();
     }
 
-    getWaveform(id)
-    {
-        return this.players[id].oscillators.waveform();
-    }
+    getWaveform(id) { return this.players[id].oscillators.waveform(); }
 
     // main game draw cycle for player avatars in the visualization
     /*

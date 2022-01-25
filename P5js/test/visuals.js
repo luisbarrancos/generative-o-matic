@@ -4,15 +4,13 @@ class Visuals
     // pass the FFT waveform, energy, do fancy visuals
     constructor(fft_samples = 64)
     {
-        this.samples = fft_samples;
+        this.samples      = fft_samples;
         this.visuals_init = true;
-        this.player_color = color(255, 255, 255);;
+        this.player_color = color(255, 255, 255);
+        ;
     }
 
-    set_color(c)
-    {
-        this.player_color = c;
-    }
+    set_color(c) { this.player_color = c; }
 
     update_frequency(frequency, frequency_range)
     {
@@ -33,7 +31,8 @@ class Visuals
             this.visuals_init = true;
         }
         */
-        if (debug) console.log("update frequency on visuals");
+        if (debug)
+            console.log("update frequency on visuals");
     }
 
     draw(wavedata)
@@ -41,7 +40,8 @@ class Visuals
         /*
         if (debug)
         {
-            console.log(`fft samples = ${this.samples}, num steps = ${this.num_steps}, angle steps = ${this.angle_steps}`);
+            console.log(`fft samples = ${this.samples}, num steps =
+        ${this.num_steps}, angle steps = ${this.angle_steps}`);
         }
 
         if (this.visuals_init == true)
@@ -88,6 +88,7 @@ class Visuals
             noStroke();
         }
         */
-        if (debug) console.log("draw() in visuals");
+        if (debug)
+            console.log("draw() in visuals");
     }
 }
