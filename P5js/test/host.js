@@ -199,6 +199,7 @@ function processMouseClick(data)
 
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
+
         //game.updateVisuals(data.id);
         if (debug)
         {

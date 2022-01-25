@@ -25,7 +25,8 @@ class Oscillators
             {
                 let osc = new p5.Oscillator();
                 osc.setType("sine");
-                osc.freq(MathUtils.random_range(this.min_frequency, this.max_frequency));
+                // TODO replace this random() call
+                osc.freq(Math.round(random(this.min_frequency, this.max_frequency)));
                 osc.amp(1.0 / this.num_oscillators); // normalize
                 // we can start, or pipe to effects
                 osc.start();
@@ -84,8 +85,8 @@ class Oscillators
     // randomize frequencies with mouse pressed
     randomize()
     {
-        const chosen = MathUtils.randint(this.num_oscillators);
-        this.oscillators[chosen].freq(random_range(this.min_frequency, this.max_frequency));
+        const chosen = random(this.num_oscillators);
+        this.oscillators[chosen].freq(Math.round(random(this.min_frequency, this.max_frequency)));
         this.oscillators[chosen].amp(Math.random() / this.num_oscillators);
     }
 
@@ -93,17 +94,9 @@ class Oscillators
     {
         if (this.oscillators.length > 0 && this.playing)
         {
-            console.log("this.min_frequency = " + this.min_frequency + ", this.max_frequency = " + this.max_frequency);
-            console.log(`update_waveform: frequency = ${frequency}, amplitude = ${amplitude}, wave type = ${wavetype}`);
-
-            console.log("oscillators.length = " + this.oscillators.length + ", num_oscillators = " + this.num_oscillators);
-            const chosen = MathUtils.randint(this.num_oscillators);
-
-            console.log("update_waveform: this.oscillators = " + this.oscillators);
-            console.log("update_waveform: chosen this.oscillator w index = " + chosen + ", content = " + this.oscillators[chosen]);
-
+            const chosen = Math.max(0, Math.floor(random(0, this.num_oscillators)));
             this.oscillators[chosen].freq(MathUtils.clamp(frequency, this.min_frequency, this.max_frequency));
-            this.oscillators[chosen].ampl(MathUtils.clamp(amplitude, 0.0, 1.0) / this.num_oscillators);
+            this.oscillators[chosen].amp(MathUtils.clamp(amplitude, 0.0, 1.0) / this.num_oscillators);
             this.oscillators[chosen].setType(wavetype);
         }
     }
@@ -112,7 +105,7 @@ class Oscillators
     {
         if (this.oscillators.length > 0 && this.playing)
         {
-            const chosen = MathUtils.randint(0, this.num_oscillators);
+            const chosen = Math.max(0, Math.floor(random(0, this.num_oscillators)));
             this.oscillators[chosen].setType(wavetype);
         }
     }
@@ -121,16 +114,8 @@ class Oscillators
     {
         if (this.oscillators.length > 0 && this.playing)
         {
-            console.log("oscillators = " + this.oscillators);
-
-            let wave_index = (ndx != null || ndx === "undefined") ? ndx : MathUtils.randint(this.num_oscillators);
-
-            console.log("wave index = " + wave_index + ", lenght of oscillators = " + this.oscillators.length);
-
+            let wave_index = (ndx != null || ndx === "undefined") ? ndx : Math.max(0, Math.floor(random(this.num_oscillators)));
             const frequency = this.oscillators[wave_index].getFreq();
-
-            console.log("scale_frequency: frequency from getFreq() = " + frequency);
-
             this.oscillators[wave_index].freq(
                 MathUtils.clamp(scale * frequency, this.min_frequency, this.max_frequency));
         }
