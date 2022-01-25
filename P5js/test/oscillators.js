@@ -1,14 +1,14 @@
 
 class Oscillators
 {
-    constructor()
+    constructor(min_frequency = 200, max_frequency = 3000)
     {
         this.num_oscillators = 10;
         this.oscillators = [];
         this.delays = [];
         this.reverbs = [];
-        this.min_frequency = 200;
-        this.max_frequency = 3000;
+        this.min_frequency = min_frequency;
+        this.max_frequency = max_frequency;
         this.num_steps = 64;
         this.fft_delta = Math.ceil((this.max_frequency - this.min_frequency) / this.num_steps);
         this.init_fft = false;
@@ -83,35 +83,44 @@ class Oscillators
 
     update_waveform(freq, ampl, type)
     {
-        const chosen = random(0, this.num_oscillators);
-        this.oscillators[chosen].freq(MathUtils.clamp(freq, this.min_frequency, this.max_frequency));
-        this.oscillators[chosen].ampl(MathUtils.clamp(ampl, 0.0, 1.0) / this.num_oscillators);
-        this.oscillators[chosen].setType(type);
+        if (this.playing)
+        {
+            const chosen = random(0, this.num_oscillators);
+            this.oscillators[chosen].freq(MathUtils.clamp(freq, this.min_frequency, this.max_frequency));
+            this.oscillators[chosen].ampl(MathUtils.clamp(ampl, 0.0, 1.0) / this.num_oscillators);
+            this.oscillators[chosen].setType(type);
+        }
     }
 
     update_wavetype(type)
     {
-        const chosen = random(0, this.num_oscillators);
-        this.oscillators[chosen].setType(type);
+        if (this.playing)
+        {
+            const chosen = random(0, this.num_oscillators);
+            this.oscillators[chosen].setType(type);
+        }
     }
 
     scale_frequency(scale, ndx = null)
     {
-        let wave_index = (ndx != null) ? ndx : random(0, this.num_oscillators);
-        const freq = this.oscillators[wave_index].getFreq();
+        if (this.playing)
+        {
+            let wave_index = (ndx != null) ? ndx : random(0, this.num_oscillators);
+            const freq = this.oscillators[wave_index].getFreq();
 
-        this.oscillators[wave_index].freq(
-            clamp(scale * freq, this.min_frequency, this.max_frequency));
+            this.oscillators[wave_index].freq(
+                clamp(scale * freq, this.min_frequency, this.max_frequency));
+        }
     }
 
     frequency(ndx)
     {
-        if (this.playing == true) return this.oscillators[ndx].getFreq(); 
+        if (this.playing) return this.oscillators[ndx].getFreq(); 
     }
 
     amplitude(ndx)
     {
-        if (this.playing == true) return this.oscillators[ndx].getAmp();
+        if (this.playing) return this.oscillators[ndx].getAmp();
     }
 
     update_fft_steps(steps)

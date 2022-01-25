@@ -28,14 +28,18 @@ class Game
             "max_frequency" : MathUtils.clamp(this.harmonic * max_frequency, 20, 20000),
         };
 
-        this.players[id].oscillators = new Oscillators();
-
+        this.players[id].oscillators = new Oscillators(
+            this.players[id].frequency_range.min_frequency,
+            this.players[id].frequency_range.max_frequency
+        );
+        /*
         this.players[id].oscillators.update_frequency_ranges(
             this.players[id].frequency_range.min_frequency,
             this.players[id].frequency_range.max_frequency
         );
+        */
 
-        this.players[id].oscillators.start();
+        this.players[id].oscillators.create();
 
         this.id++;
         this.harmonic++;
@@ -59,7 +63,9 @@ class Game
         this.players[id].oscillators.stop();
         delete this.players[id];
         this.numPlayers--;
+        this.numPlayers = Math.max(0, this.numPlayers);
         this.harmonic--; // not correct, it might overlap the harmonic
+        this.harmonic = Math.max(1, this.harmonic);
     }
 
     checkId(id)
@@ -138,26 +144,26 @@ class Game
 
     // main game draw cycle for player avatars in the visualization
     /*
-    updateCymatics(id)
+    updateVisuals(id)
     {
-        this.players[id].cymatic.update_frequency(
+        this.players[id].visuals.update_frequency(
             this.players[id].soundwave.frequency(),
             this.players[id].frequency_range);
 
-        //this.players[id].cymatic.set_color(this.players[id].color);
+        //this.players[id].visuals.set_color(this.players[id].color);
     }
 
-    draw_cymatic(id)
+    draw_visuaks(id)
     {
-        this.players[id].cymatic.set_color(this.getColor(id));
-        this.players[id].cymatic.draw(this.players[id].soundwave.waveform());
+        this.players[id].visuals.set_color(this.getColor(id));
+        this.players[id].visuals.draw(this.players[id].soundwave.waveform());
     }
 
     draw()
     {
         for (let id in game.players)
         {
-            this.draw_cymatic(id);
+            this.draw_visuals(id);
         }
     }
     */

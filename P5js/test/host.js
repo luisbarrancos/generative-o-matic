@@ -44,6 +44,7 @@ const fft_samples = 64;
 
 // QR code related stuff
 let qr_img;
+
 // an HTML div to display it in:
 let tagDiv;
 
@@ -181,7 +182,6 @@ function processMouseClick(data)
 {
     if (data != null)
     {
-        /*
         game.players[data.id].xcoord = data.xcoord;
         game.players[data.id].ycoord = data.ycoord;
 
@@ -197,8 +197,7 @@ function processMouseClick(data)
 
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
-        //game.updateCymatics(data.id);
-            */
+        //game.updateVisuals(data.id);
         if (debug)
         {
             console.log(`${data.id} XY received: X = ${data.xcoord}, ${data.id} Y = ${data.ycoord}`);
