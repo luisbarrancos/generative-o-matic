@@ -84,8 +84,14 @@ class Oscillators
     update_waveform(freq, ampl, type)
     {
         const chosen = random(0, this.num_oscillators);
-        this.oscillators[chosen].freq(constrain(freq, this.min_frequency, this.max_frequency));
-        this.oscillators[chosen].ampl(constrain((ampl), 0.0, 1.0) / this.num_oscillators);
+        this.oscillators[chosen].freq(MathUtils.clamp(freq, this.min_frequency, this.max_frequency));
+        this.oscillators[chosen].ampl(MathUtils.clamp(ampl, 0.0, 1.0) / this.num_oscillators);
+        this.oscillators[chosen].setType(type);
+    }
+
+    update_wavetype(type)
+    {
+        const chosen = random(0, this.num_oscillators);
         this.oscillators[chosen].setType(type);
     }
 
@@ -95,7 +101,7 @@ class Oscillators
         const freq = this.oscillators[wave_index].getFreq();
 
         this.oscillators[wave_index].freq(
-            constrain(scale * freq, this.min_frequency, this.max_frequency));
+            clamp(scale * freq, this.min_frequency, this.max_frequency));
     }
 
     frequency(ndx)
@@ -143,7 +149,9 @@ class Oscillators
                 // which is what we want. It returns energy in [0,255], remap to [0.0, 1.0]
                 waveform_energy.push(fft.getEnergy(i, i + this.fft_delta) / 255.0);
             }
+            return waveform_energy; // will it survive outside call?
         }
+        return null;
     }
 
     waveform()

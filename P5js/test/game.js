@@ -1,6 +1,4 @@
 
-const clamp = (x, mi, ma) => Math.min(Math.max(mi, x), ma);
-
 class Game
 {
     constructor(w, h)
@@ -26,8 +24,8 @@ class Game
         // player1 gets the fundamental wave
         this.players[id].frequency_range =
         {
-            "min_frequency" : clamp(this.harmonic * min_frequency, 20, 20000),
-            "max_frequency" : clamp(this.harmonic * max_frequency, 20, 20000),
+            "min_frequency" : MathUtils.clamp(this.harmonic * min_frequency, 20, 20000),
+            "max_frequency" : MathUtils.clamp(this.harmonic * max_frequency, 20, 20000),
         };
 
         this.players[id].oscillators = new Oscillators();
@@ -56,9 +54,10 @@ class Game
         
     remove(id)
     {
-        this.players[id].soundwave.stop();
+        this.players[id].oscillators.stop();
         delete this.players[id];
         this.numPlayers--;
+        this.harmonic--; // not correct, it might overlap the harmonic
     }
 
     checkId(id)
@@ -90,21 +89,53 @@ class Game
         pop();
     }
 
-    updateSoundWaves(id, frequency, amplitude)
+    randomizeOscillators(id)
+    {
+        this.players[id].oscillators.randomize();
+    }
+
+    updateSoundWaves(id, frequency, amplitude, type)
     {
         if (debug)
         {
-            console.log(`freq = ${frequency}, amp = ${amplitude}`);
+            console.log(`freq = ${frequency}, amp = ${amplitude}, type = ${type}`);
         }
-        this.players[id].soundwave.update(frequency, amplitude);
+        this.players[id].oscillators.update_waveform(frequency, amplitude, type);
     }
 
-    updateWaveType(id, wavetype, confidence)
+    updateWaveType(id, wavetype)
     {
-        this.players[id].soundwave.change_type(wavetype);
-        this.players[id].soundwave.scale_frequency(confidence);
+        this.players[id].oscillators.update_wavetype(wavetype);
     }
 
+    scaleFrequency(id, scale, ndx = null)
+    {
+        this.players[id].oscillators.scale_frequency(scale, ndx);
+    }
+
+    getFrequency(id, ndx = null)
+    {
+        return this.players[id].oscillators.frequency(ndx);
+    }
+
+    getAmplitude(id, ndx = null)
+    {
+        return this.players[id].oscillators.amplitude(ndx);
+    }
+
+    getEnergy(id)
+    {
+        // returns an array with the energy per bands, or null
+        return this.players[id].oscillators.energy();
+    }
+
+    getWaveform(id)
+    {
+        return this.players[id].oscillators.waveform();
+    }
+
+    // main game draw cycle for player avatars in the visualization
+    /*
     updateCymatics(id)
     {
         this.players[id].cymatic.update_frequency(
@@ -116,11 +147,6 @@ class Game
 
     draw_cymatic(id)
     {
-        /*
-        this.players[id].cymatic.update_frequency(
-            this.players[id].soundwave.frequency(),
-            this.players[id].frequency_range);
-            */
         this.players[id].cymatic.set_color(this.getColor(id));
         this.players[id].cymatic.draw(this.players[id].soundwave.waveform());
     }
@@ -132,4 +158,5 @@ class Game
             this.draw_cymatic(id);
         }
     }
+    */
 }
