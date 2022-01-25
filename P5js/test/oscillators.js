@@ -1,5 +1,5 @@
 
-const effects = false;
+const effects = true;
 
 class Oscillators
 {
@@ -38,13 +38,13 @@ class Oscillators
                     delay.connect(reverb);
                     osc.disconnect();
                     osc.connect(delay);
-                }
-                this.oscillators.push(osc);
-
-                if (effects)
-                {
+                    this.oscillators.push(osc);
                     this.delays.push(delay);
                     this.reverbs.push(reverb);
+                }
+                else
+                {
+                    this.oscillators.push(osc);
                 }
             }
             this.playing = true;
