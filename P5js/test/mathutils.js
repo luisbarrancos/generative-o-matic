@@ -21,4 +21,13 @@ class MathUtils
         return [ r * Math.cos(theta), r * Math.sin(theta) ];
     }
 
+    static randint(nmax)
+    {
+        return Math.max(0, Math.ceil(Math.random() * nmax) - 1);
+    }
+
+    static random_range(nmin, nmax)
+    {
+        return Math.min(nmax - 1, Math.round(Math.random() * nmax + nmin));
+    }
 }

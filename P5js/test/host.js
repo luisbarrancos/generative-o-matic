@@ -195,6 +195,8 @@ function processMouseClick(data)
             map(data.ycoord, 0, screen_height, 0.001, 1.0),
             0.0, 1.0);
 
+        log(`processMouseClick: Frequency = ${frequency}, amplitude = ${amplitude}`);
+
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
         //game.updateVisuals(data.id);

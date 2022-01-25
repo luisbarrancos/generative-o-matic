@@ -25,7 +25,7 @@ class Oscillators
             {
                 let osc = new p5.Oscillator();
                 osc.setType("sine");
-                osc.freq(random(this.min_frequency, this.max_frequency));
+                osc.freq(MathUtils.random_range(this.min_frequency, this.max_frequency));
                 osc.amp(1.0 / this.num_oscillators); // normalize
                 // we can start, or pipe to effects
                 osc.start();
@@ -84,51 +84,66 @@ class Oscillators
     // randomize frequencies with mouse pressed
     randomize()
     {
-        const chosen = random(0, this.num_oscillators);
-        this.oscillators[chosen].freq(random(this.min_frequency, this.max_frequency));
+        const chosen = MathUtils.randint(this.num_oscillators);
+        this.oscillators[chosen].freq(random_range(this.min_frequency, this.max_frequency));
         this.oscillators[chosen].amp(Math.random() / this.num_oscillators);
     }
 
-    update_waveform(freq, ampl, type)
+    update_waveform(frequency, amplitude, wavetype)
     {
-        if (this.playing)
+        if (this.oscillators.length > 0 && this.playing)
         {
-            const chosen = random(0, this.num_oscillators);
-            this.oscillators[chosen].freq(MathUtils.clamp(freq, this.min_frequency, this.max_frequency));
-            this.oscillators[chosen].ampl(MathUtils.clamp(ampl, 0.0, 1.0) / this.num_oscillators);
-            this.oscillators[chosen].setType(type);
+            console.log("this.min_frequency = " + this.min_frequency + ", this.max_frequency = " + this.max_frequency);
+            console.log(`update_waveform: frequency = ${frequency}, amplitude = ${amplitude}, wave type = ${wavetype}`);
+
+            console.log("oscillators.length = " + this.oscillators.length + ", num_oscillators = " + this.num_oscillators);
+            const chosen = MathUtils.randint(this.num_oscillators);
+
+            console.log("update_waveform: this.oscillators = " + this.oscillators);
+            console.log("update_waveform: chosen this.oscillator w index = " + chosen + ", content = " + this.oscillators[chosen]);
+
+            this.oscillators[chosen].freq(MathUtils.clamp(frequency, this.min_frequency, this.max_frequency));
+            this.oscillators[chosen].ampl(MathUtils.clamp(amplitude, 0.0, 1.0) / this.num_oscillators);
+            this.oscillators[chosen].setType(wavetype);
         }
     }
 
-    update_wavetype(type)
+    update_wavetype(wavetype)
     {
-        if (this.playing)
+        if (this.oscillators.length > 0 && this.playing)
         {
-            const chosen = random(0, this.num_oscillators);
-            this.oscillators[chosen].setType(type);
+            const chosen = MathUtils.randint(0, this.num_oscillators);
+            this.oscillators[chosen].setType(wavetype);
         }
     }
 
     scale_frequency(scale, ndx = null)
     {
-        if (this.playing)
+        if (this.oscillators.length > 0 && this.playing)
         {
-            let wave_index = (ndx != null) ? ndx : random(0, this.num_oscillators);
-            const freq = this.oscillators[wave_index].getFreq();
+            console.log("oscillators = " + this.oscillators);
+
+            let wave_index = (ndx != null || ndx === "undefined") ? ndx : MathUtils.randint(this.num_oscillators);
+
+            console.log("wave index = " + wave_index + ", lenght of oscillators = " + this.oscillators.length);
+
+            const frequency = this.oscillators[wave_index].getFreq();
+
+            console.log("scale_frequency: frequency from getFreq() = " + frequency);
 
             this.oscillators[wave_index].freq(
-                clamp(scale * freq, this.min_frequency, this.max_frequency));
+                MathUtils.clamp(scale * frequency, this.min_frequency, this.max_frequency));
         }
     }
 
     frequency(ndx)
     {
-        if (this.playing) return this.oscillators[ndx].getFreq(); 
+        if (this.playing && this.oscillators.length > 0) return this.oscillators[ndx].getFreq(); 
     }
 
     amplitude(ndx)
     {
-        if (this.playing) return this.oscillators[ndx].getAmp();
+        if (this.playing && this.oscillators.length > 0) return this.oscillators[ndx].getAmp();
     }
 
     update_fft_steps(steps)
