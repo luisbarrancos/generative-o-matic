@@ -408,8 +408,8 @@ function processTouchDrag(data)
         text("Process touch & drag:");
         if (data != null)
         {
-            text(`Process touch & drag: x coord = ${data.x_coord}, movedX = ${data.x_motion}`);
-            text(`Process touch & drag: y coord = ${data.y_coord}, movedX = ${data.y_motion}`);
+            //text(`Process touch & drag: x coord = ${data.x_coord}, movedX = ${data.x_motion}`);
+            //text(`Process touch & drag: y coord = ${data.y_coord}, movedX = ${data.y_motion}`);
         }
     }
 
@@ -423,8 +423,8 @@ function processTouchDrag(data)
         velocityMap.shader(velocityAddShader);
         velocityAddShader.setUniform("uTexture", velocityMap);
         velocityAddShader.setUniform("uSourse",[
-            constrain(data.x_motion / 10.0, -0.5, 0.5),
-            constrain(data.y_motion / 10.0, -0.5, 0.5), 0]
+            constrain(data.x_coord / 10.0, -0.5, 0.5),
+            constrain(data.y_coord / 10.0, -0.5, 0.5), 0]
             );
 
         velocityAddShader.setUniform("uMouse", mousePos);

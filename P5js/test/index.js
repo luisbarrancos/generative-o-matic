@@ -200,8 +200,8 @@ function touchMoved()
         "x_coord" : mouseX,
         "y_coord" : mouseY,
         // mouse movement since last frame
-        "x_motion" : movedX,
-        "y_motion" : movedY,
+        //"x_motion" : movedX,
+        //"y_motion" : movedY,
         // previous coords
         "x_pcoord" : pmouseX,
         "y_pcoord" : pmouseY
