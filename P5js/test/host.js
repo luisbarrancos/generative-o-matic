@@ -106,9 +106,9 @@ function draw()
     // players information and the QR code. We might need to add these to the
     // actual shader itself since the rectangle ovelays on top of everything.
     //
-    shader(shader_base);
+    //shader(shader_base);
     // and the rectangle for them, but the QR code must be sent aftwards
-    rect(0, 0, width, height);
+    //rect(0, 0, width, height);
 
     if (isHostConnected(display = true))
     {
@@ -119,8 +119,16 @@ function draw()
     }
     // this might need to be moved with the other text into the actual shader
     // if we don't find a way to overlay the image over the rectangle
-    displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);
-    tagDiv.html(qr_img);
+    displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);   
+ 
+    if(debug)
+    {
+        document.getElementById("qrcode").innerHTML = qr_img;
+    }
+    else
+    {
+        tagDiv.html(qr_img);
+    }  
 }
 
 function onClientConnect(data)
