@@ -1,4 +1,5 @@
-
+// TODO: move all GLSL CFD here...
+//
 class Visuals
 {
     // pass the FFT waveform, energy, do fancy visuals
