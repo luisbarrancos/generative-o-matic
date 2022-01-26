@@ -434,8 +434,8 @@ function processTouchDrag(data)
         velocityMap.shader(velocityAddShader);
         velocityAddShader.setUniform("uTexture", velocityMap);
         velocityAddShader.setUniform("uSourse", [
-            constrain(data.x_coord / 10.0, -0.5, 0.5),
-            constrain(data.y_coord / 10.0, -0.5, 0.5),
+            constrain(data.x_pcoord / 10.0, -0.5, 0.5),
+            constrain(data.y_pcoord / 10.0, -0.5, 0.5),
             0
         ]);
 
