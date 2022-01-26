@@ -24,13 +24,13 @@ let game;
 // essential UI parameters
 const screen_width  = 512;
 const screen_height = 512;
-const frame_rate    = 25;
 const half_width    = screen_width / 2;
 const half_height   = screen_height / 2;
+const frame_rate    = 25;
 
 // enable to debug
 const debug              = true;
-p5.disableFriendlyErrors = (debug == false) ? true : false;
+p5.disableFriendlyErrors = true;
 
 // sound synthesis related
 const absolute_min_frequency = 20;
@@ -44,22 +44,44 @@ const fft_samples            = 64;
 
 // QR code related stuff
 let qr_img;
-
 // an HTML div to display it in:
 let tagDiv;
+// font related
+let font;
+
+// shaders and glsl related
+let shader_base;
 
 function preload()
 {
     setupHost();
+
+    shader_base = loadShader(
+        "assets/base.vert",
+        "assets/base.frag",
+    );
+    // fonts must be loaded and set before drawing text
+    // WebGL text()
+    // https://github.com/processing/p5.js/wiki/Getting-started-with-WebGL-in-p5
+    font = loadFont("assets/RobotoMono-Regular.ttf");
 }
 
 function setup()
 {
+    if (debug)
+    {
+        p5.disableFriendlyErrors = false;
+        console.log('Initializing...');
+        setuplogger();
+    }
+
     // noCanvas();
-    let canvas = createCanvas(screen_width, screen_height);
+    let canvas = createCanvas(screen_width, screen_height, WEBGL);
     canvas.position(0, 0);
     angleMode(RADIANS);
     frameRate(frame_rate);
+
+    // blendMode(ADD);
     background(0);
 
     // qrcode for server, room
@@ -69,9 +91,8 @@ function setup()
     tagDiv = createDiv();
     tagDiv.position(screen_width - 100, screen_height - 100);
 
-    // Host/Game setup here. ---->
+    // Host/Game setup 
     game = new Game(screen_width, screen_height);
-    // <----
 }
 
 function draw()
@@ -80,18 +101,24 @@ function draw()
     fill(255, 127, 50);
     background(0);
 
+    // The shader call must be per frame, and the input only per established
+    // connection. After the rectangle binding the GLSL shaders, we need the
+    // players information and the QR code. We might need to add these to the
+    // actual shader itself since the rectangle ovelays on top of everything.
+    //
+    shader(shader_base);
+    // and the rectangle for them, but the QR code must be sent aftwards
+    rect(0, 0, width, height);
+
     if (isHostConnected(display = true))
     {
-        // Host/Game draw here. --->
         // Display player IDs in top left corner
         game.printPlayerIds(5, 20);
-
         // Update and draw game objects
         // game.draw();
-        // <----
-        // game.draw();
     }
-
+    // this might need to be moved with the other text into the actual shader
+    // if we don't find a way to overlay the image over the rectangle
     displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);
     tagDiv.html(qr_img);
 }
@@ -121,18 +148,6 @@ function onClientDisconnect(data)
     // <----
 }
 
-function displayCustomAddress(textcolor, font_size, xpos, ypos)
-{
-    push();
-    fill(textcolor);
-    textSize(font_size);
-    text(
-        `Enter the room at : ${serverIp}/?=${roomId} or scan the QR code`,
-        xpos,
-        ypos);
-    pop();
-}
-
 // functions
 // on receive data, of data type
 // call method that changes game state
@@ -148,34 +163,44 @@ function onReceiveData(data)
             console.log(data);
         }
 
+        // Main series of input events from the client
+        // Unique player color ID
+        //
         if (data.type === "player_color")
         {
             game.setColor(data.id, data.r * 255, data.g * 255, data.b * 255);
         }
+        // On mouse click, send X,Y coords, and affect the frequency and
+        // amplitude of the soundwave.
         else if (data.type === "input_coords")
         {
             processMouseClick(data);
             // game method to process input coords (sound effect)
         }
-
-        /* Example:
-        if (data.type === 'myDataType') {
-            processMyData(data);
+        // If the device motion is above a shake threshold, trigger
+        else if (data.type === "shaken")
+        {
+            processDeviceShake(data);
         }
-        Use `data.type` to get the message type sent by client.
-        */
+        // If device motion is above a shake threshold, trigger, so that we
+        // have a binary state: resting | movement
+        else if (data.type === "device_moved")
+        {
+            // accelerationX|Y|Z, rotationX|Y|Z
+            // inclination
+            processDeviceSensors(data);
+        }
+        // Touch & drag, not yet active
+        else if (data.type === "touch_drag")
+        {
+            processTouchDrag(data);
+        }
     }
 }
 
-// This is included for testing purposes to demonstrate that
-// messages can be sent from a host back to all connected clients
-function mousePressed()
-{
-    sendData("timestamp", {timestamp : millis()});
-}
-
-////////////
+//
 // Input processing
+//
 // function that calls method of globally accessible game object which
 // was declared outside any method, globally, but instantiated within setup()
 //
@@ -200,8 +225,11 @@ function processMouseClick(data)
         const amplitude = MathUtils.clamp(
             map(data.ycoord, 0, screen_height, 0.001, 1.0), 0.0, 1.0);
 
-        log(`processMouseClick: Frequency = ${frequency}, amplitude = ${
-            amplitude}`);
+        if (debug)
+        {
+            log(`processMouseClick: Frequency = ${frequency}, amplitude = ${
+                amplitude}`);
+        }
 
         game.updateSoundWaves(data.id, frequency, amplitude, "sine");
 
@@ -214,56 +242,40 @@ function processMouseClick(data)
     }
 }
 
-// process input shake? change wave type
-function processEmotions(data)
+////////////
+// Input processing
+// TODO: move to own separate class, this is annoying
+function processJoystick(data)
 {
-    if (data != null)
-    {
-        /*
-        game.players[data.id].emotion = data.emotion;
-        game.players[data.id].confidence = data.confidence;
+    fill(0, 255, 0);
+    text("process joystick data", width / 2, height / 2);
+}
 
-        // emotions are: angry | sad | surprised | happy
-        if (data.emotion === "angry")
-        {
-            game.players[data.id].wavetype = "square";
-        }
-        else if (data.emotion === "sad")
-        {
-            game.players[data.id].wavetype = "triangle";
-        }
-        else if (data.emotion === "surprised")
-        {
-            game.players[data.id].wavetype = "sawtooth";
-        }
-        else if (data.emotion === "happy")
-        {
-            game.players[data.id].wavetype = "sine";
-        }
-        //game.players[data.id].amplitude = data.confidence;
-        //game.updateWaveType(
-        //    data.id,
-        //   game.players[data.id].wavetype,
-        //    game.players[data.id].confidence);
+function processDeviceShake(data)
+{
+    fill(255, 200, 0);
+    text("process device shake");
+}
 
-        //game.updateCymatics(data.id);
+function processDeviceSensors(data)
+{
+    fill(255, 200, 0);
+    text("process device sensors");
+}
 
-        if (debug)
-        {
-            console.log(`${data.id} emotion = ${data.emotion},
-            confidence = ${data.confidence}`);
-        }
-        */
-    }
+function processTouchDrag(data)
+{
+    fill(255, 200, 0);
+    text("process touch & drag");
 }
 
 // Displays server address in lower left of screen
 function room_url(roomid = null)
 {
-    if (roomid != null)
-        return `${serverIp}/?=${roomId}`;
+    if (roomid == null || roomId === "undefined")
+        return `${serverIp}:${serverPort}/?=sdi4`;
 
-    return `${serverIp}/?=gold`;
+    return `${serverIp}:${serverPort}/?=${roomId}`;
 }
 
 function generate_qrcode(qr_input_string, margin, size)
@@ -277,10 +289,38 @@ function generate_qrcode(qr_input_string, margin, size)
     return qr_img;
 }
 
+function displayCustomAddress(textcolor, font_size, xpos, ypos)
+{
+    push();
+    fill(textcolor);
+    textFont(font, font_size);
+    text(
+        `Enter the room at : ${serverIp}/?=${roomId} or scan the QR code`,
+        xpos,
+        ypos);
+    pop();
+}
+
+
+// This is included for testing purposes to demonstrate that
+// messages can be sent from a host back to all connected clients
 function mousePressed()
+{
+    if (debug)
+    {
+        console.log("Mouse pressed: sending timestamp millis() to client.")
+    }
+    sendData("timestamp", {timestamp : millis()});
+    // audio context
+    userStartAudio();
+}
+
+/*
+function mouseClicked()
 {
     userStartAudio();
 }
+*/
 
 function windowResized()
 {
