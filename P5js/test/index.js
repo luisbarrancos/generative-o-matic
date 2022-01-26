@@ -29,29 +29,33 @@ let accx = 0, accy = 0, accz = 0;
 let motion = false;
 let ios    = false;
 
-// A click is needed for the device to request permission 
-if (typeof DeviceMotionEvent.requestPermission === 'function') {
+/*
+// A click is needed for the device to request permission
+if (typeof DeviceMotionEvent.requestPermission === 'function')
+{
     document.body.addEventListener('click', function() {
-      DeviceMotionEvent.requestPermission()
-        .then(function() {
-          console.log('DeviceMotionEvent enabled');
-  
-          motion = true;
-          ios = true;
-        })
-        .catch(function(error) {
-          console.warn('DeviceMotionEvent not enabled', error);
-        })
+        DeviceMotionEvent.requestPermission()
+            .then(function() {
+                console.log('DeviceMotionEvent enabled');
+
+                motion = true;
+                ios    = true;
+            })
+            .catch(function(error) {
+                console.warn('DeviceMotionEvent not enabled', error);
+            })
     })
-  } else {
+}
+else
+{
     // we are not on ios13 and above
     // todo
     // add detection for hardware for other devices
     // if(got the hardware) {
     // motion = true;
     // }
-  }
-
+}
+*/
 
 function set_player_colors()
 {
@@ -95,8 +99,7 @@ function setup()
 
         Use `type` to classify message types for host.
     */
-    sendData("player_color",
-    {
+    sendData("player_color", {
         r : red(player_colors["active_color"]) / 255,
         g : green(player_colors["active_color"]) / 255,
         b : blue(player_colors["active_color"]) / 255
@@ -123,8 +126,7 @@ function draw()
         // NOTE: rotationX,Y,Z are in degrees, but we set angle mode to
         //       radians, so convert the input
 
-        let device_motion =
-        {
+        let device_motion = {
             "z_motion" :
                 Math.round(width / 5 * Math.abs(radians(rotationZ) - PI)),
             "y_motion" : Math.round(half_height + rotationX * 10),
@@ -160,12 +162,14 @@ function draw()
         text("click to start on iOS", 10, 80);
         text("on a mobile: twist, and tilt your device", 10, 120);
         text(
-            `device - x: ${round(rotationX)}, y: ${round(rotationX)}, z: ${round(rotationZ)}`,
+            `device - x: ${round(rotationX)}, y: ${round(rotationX)}, z: ${
+                round(rotationZ)}`,
             10,
             160);
 
         text(
-            `circle - x: ${device_motion.x_motion}, y: ${device_motion.y_motion}, radius: ${device_motion.z_motion}`,
+            `circle - x: ${device_motion.x_motion}, y: ${
+                device_motion.y_motion}, radius: ${device_motion.z_motion}`,
             10,
             200);
     }
@@ -242,20 +246,21 @@ window.addEventListener("deviceorientation", function(ev) {
     }
 })
 
-window.addEventListener("devicemotion", (ev) =>
-{
+window.addEventListener("devicemotion", (ev) => {
     if (debug)
     {
         console.info(ev.acceleration.y, ev.rotationRate.gamma);
-        console.log(`accel Y = ${ev.acceleration.y}, rotation gamma = ${ev.rotationRate.gamma}`);
-        console.log(`accel X = ${ev.acceleration.y}, rotation gamma = ${ev.rotationRate.gamma}`);
-        console.log(`accel Z = ${ev.acceleration.y}, rotation gamma = ${ev.rotationRate.gamma}`);
+        console.log(`accel Y = ${ev.acceleration.y}, rotation gamma = ${
+            ev.rotationRate.gamma}`);
+        console.log(`accel X = ${ev.acceleration.y}, rotation gamma = ${
+            ev.rotationRate.gamma}`);
+        console.log(`accel Z = ${ev.acceleration.y}, rotation gamma = ${
+            ev.rotationRate.gamma}`);
     }
 })
 
 // accelerometer Data
-window.addEventListener("devicemotion", (e) =>
-{
+window.addEventListener("devicemotion", (e) => {
     // get accelerometer values
     x = parseInt(e.accelerationIncludingGravity.x);
     y = parseInt(e.accelerationIncludingGravity.y);
