@@ -97,18 +97,18 @@ function setup()
 
 function draw()
 {
-    clear();
-    fill(255, 127, 50);
-    background(0);
+    //clear();
+    //fill(255, 127, 50);
+    //background(0);
 
     // The shader call must be per frame, and the input only per established
     // connection. After the rectangle binding the GLSL shaders, we need the
     // players information and the QR code. We might need to add these to the
     // actual shader itself since the rectangle ovelays on top of everything.
     //
-    //shader(shader_base);
+    shader(shader_base);
     // and the rectangle for them, but the QR code must be sent aftwards
-    //rect(0, 0, width, height);
+    rect(0, 0, width, height);
 
     if (isHostConnected(display = true))
     {
