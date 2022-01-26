@@ -29,35 +29,28 @@ let accx = 0, accy = 0, accz = 0;
 let motion = false;
 let ios    = false;
 
-// below code is essential for ios13 and above.
-// A click is needed for the device to request permission
-if (typeof DeviceMotionEvent.requestPermission === "function")
-{
-    document.body.addEventListener("click", () =>
-    {
-        DeviceMotionEvent.requestPermission()
-            .then(() =>
-            {
-                console.log("DeviceMotionEvent enabled");
-                motion = true;
-                ios = true;
-            })
-            .catch((error) =>
-            {
-                console.warn("DeviceMotionEvent not enabled", error);
-            });
+// A click is needed for the device to request permission 
+if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    document.body.addEventListener('click', function() {
+      DeviceMotionEvent.requestPermission()
+        .then(function() {
+          console.log('DeviceMotionEvent enabled');
+  
+          motion = true;
+          ios = true;
+        })
+        .catch(function(error) {
+          console.warn('DeviceMotionEvent not enabled', error);
+        })
     })
-}
-else
-{
+  } else {
     // we are not on ios13 and above
     // todo
     // add detection for hardware for other devices
     // if(got the hardware) {
     // motion = true;
     // }
-    motion = true;
-}
+  }
 
 
 function set_player_colors()
@@ -167,14 +160,12 @@ function draw()
         text("click to start on iOS", 10, 80);
         text("on a mobile: twist, and tilt your device", 10, 120);
         text(
-            "device - x: " + round(rotationX) + ", y: " + round(rotationX)
-                + ", z: " + round(rotationZ),
+            `device - x: ${round(rotationX)}, y: ${round(rotationX)}, z: ${round(rotationZ)}`,
             10,
             160);
 
         text(
-            "circle - x: " + xMotion + ", y: " + yMotion
-                + ", radius: " + zMotion,
+            `circle - x: ${device_motion.x_motion}, y: ${device_motion.y_motion}, radius: ${device_motion.z_motion}`,
             10,
             200);
     }
