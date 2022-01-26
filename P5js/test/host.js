@@ -54,7 +54,7 @@ let shader_base;
 // This is going to be painful
 // TODO: clean this up a bit, move input events into own class, and perhaps some
 //       OpenGL/GLSL functionality as well
-const gridSize = [512, 512];
+const gridSize = [ 512, 512 ];
 
 let velocityMap;
 let pressureMap;
@@ -81,27 +81,27 @@ function preload()
         "assets/base.frag",
     );
     */
-    const verts 			= "assets/vertex.vert";
-	const add_frag 			= "assets/velocityAddShader.frag";
-	const diffuse_frag 		= "assets/velocityDiffuseShader.frag";
-	const advect_frag		= "assets/velocityAdvectShader.frag";
-	const project_frag 		= "assets/velocityProjectShader.frag";
-	const pressure_frag 	= "assets/pressureShader.frag";
-	const display_frag 		= "assets/displayShader.frag";
+    const verts         = "assets/vertex.vert";
+    const add_frag      = "assets/velocityAddShader.frag";
+    const diffuse_frag  = "assets/velocityDiffuseShader.frag";
+    const advect_frag   = "assets/velocityAdvectShader.frag";
+    const project_frag  = "assets/velocityProjectShader.frag";
+    const pressure_frag = "assets/pressureShader.frag";
+    const display_frag  = "assets/displayShader.frag";
 
-	// velocity map
-	velocityAddShader = loadShader(verts, add_frag);
-	velocityDiffuseShader = loadShader(verts, diffuse_frag);
-	velocityAdvectShader = loadShader(verts, advect_frag);
-	velocityProjectShader = loadShader(verts, project_frag);
-	// pressure map
-	pressureShader = loadShader(verts, pressure_frag);
-	// dense map
-	denseAddShader = loadShader(verts, add_frag);
-	denseDiffuseShader = loadShader(verts, diffuse_frag);
-	denseAdvectShader = loadShader(verts, advect_frag);
-	// display
-	displayShader = loadShader(verts, display_frag);
+    // velocity map
+    velocityAddShader     = loadShader(verts, add_frag);
+    velocityDiffuseShader = loadShader(verts, diffuse_frag);
+    velocityAdvectShader  = loadShader(verts, advect_frag);
+    velocityProjectShader = loadShader(verts, project_frag);
+    // pressure map
+    pressureShader = loadShader(verts, pressure_frag);
+    // dense map
+    denseAddShader     = loadShader(verts, add_frag);
+    denseDiffuseShader = loadShader(verts, diffuse_frag);
+    denseAdvectShader  = loadShader(verts, advect_frag);
+    // display
+    displayShader = loadShader(verts, display_frag);
 
     // fonts must be loaded and set before drawing text
     // WebGL text()
@@ -128,35 +128,37 @@ function setup()
     background(0);
 
     // main CFD shader
-    // TODO: well, we"re creating the FBOs, and loading the shaders, we could store
-    //       into an object, encapsulate this neatly to spare this spam in setup()
-    //       but on the other hand it is yet another layer of indirection.
+    // TODO: well, we"re creating the FBOs, and loading the shaders, we could
+    // store
+    //       into an object, encapsulate this neatly to spare this spam in
+    //       setup() but on the other hand it is yet another layer of
+    //       indirection.
     //
-	velocityMap = createGraphics(gridSize[0], gridSize[1], WEBGL);
-	pressureMap = createGraphics(gridSize[0], gridSize[1], WEBGL);
-	denseMap = createGraphics(gridSize[0], gridSize[1], WEBGL);
+    velocityMap = createGraphics(gridSize[0], gridSize[1], WEBGL);
+    pressureMap = createGraphics(gridSize[0], gridSize[1], WEBGL);
+    denseMap    = createGraphics(gridSize[0], gridSize[1], WEBGL);
 
-	velocityMap.shader(velocityAddShader);
-	velocityMap.shader(velocityDiffuseShader);
-	velocityMap.shader(velocityAdvectShader);
-	velocityMap.shader(velocityProjectShader);
+    velocityMap.shader(velocityAddShader);
+    velocityMap.shader(velocityDiffuseShader);
+    velocityMap.shader(velocityAdvectShader);
+    velocityMap.shader(velocityProjectShader);
 
-	pressureMap.shader(pressureShader);
+    pressureMap.shader(pressureShader);
 
-	denseMap.shader(denseAddShader);
-	denseMap.shader(denseDiffuseShader);
-	denseMap.shader(denseAdvectShader);
+    denseMap.shader(denseAddShader);
+    denseMap.shader(denseDiffuseShader);
+    denseMap.shader(denseAdvectShader);
 
-	velocityMap.background(127, 127, 0);
+    velocityMap.background(127, 127, 0);
 
-	velocityMap.stroke(127, 127, 0);
-	pressureMap.background(0);
-	pressureMap.stroke(0);
-	denseMap.background(0);
-	denseMap.stroke(0);	
+    velocityMap.stroke(127, 127, 0);
+    pressureMap.background(0);
+    pressureMap.stroke(0);
+    denseMap.background(0);
+    denseMap.stroke(0);
 
-	shader(displayShader);
-	displayShader.setUniform("uBaseColor", [0.6, 0.6, 0.65]);
+    shader(displayShader);
+    displayShader.setUniform("uBaseColor", [ 0.6, 0.6, 0.65 ]);
 
     // qrcode for server, room
     qr_img = generate_qrcode(room_url(), 4, 6);
@@ -165,15 +167,15 @@ function setup()
     tagDiv = createDiv();
     tagDiv.position(screen_width - 100, screen_height - 100);
 
-    // Host/Game setup 
+    // Host/Game setup
     game = new Game(screen_width, screen_height);
 }
 
 function draw()
 {
-    //clear();
-    //fill(255, 127, 50);
-    //background(0);
+    // clear();
+    // fill(255, 127, 50);
+    // background(0);
 
     // The shader call must be per frame, and the input only per established
     // connection. After the rectangle binding the GLSL shaders, we need the
@@ -181,63 +183,71 @@ function draw()
     // actual shader itself since the rectangle ovelays on top of everything.
     //
     // DEBUG shader
-    //shader(shader_base);
+    // shader(shader_base);
     // and the rectangle for them, but the QR code must be sent aftwards
     // rect(0, 0, width, height);
 
     // Main CFD shader
-	//noiseDetail(5, 0.8);
-	//pressureMap.background(noise(frameCount), noise(frameCount*2), noise(frameCount*3));
+    // noiseDetail(5, 0.8);
+    // pressureMap.background(noise(frameCount), noise(frameCount*2),
+    // noise(frameCount*3));
 
     // TODO: this needs to be neater...
-	// Velocity
-	velocityMap.shader(velocityDiffuseShader);
-	velocityDiffuseShader.setUniform("uTexture", velocityMap);
-	velocityDiffuseShader.setUniform("uResolution", gridSize);
-	velocityDiffuseShader.setUniform("uFloat", 0.1);
-	velocityMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+    // Velocity
+    velocityMap.shader(velocityDiffuseShader);
+    velocityDiffuseShader.setUniform("uTexture", velocityMap);
+    velocityDiffuseShader.setUniform("uResolution", gridSize);
+    velocityDiffuseShader.setUniform("uFloat", 0.1);
+    velocityMap.rect(
+        -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
     // Advection
-	velocityMap.shader(velocityAdvectShader);
-	velocityAdvectShader.setUniform("uTexture", velocityMap);
-	velocityAdvectShader.setUniform("uVelocity", velocityMap);
-	velocityAdvectShader.setUniform("uFloat", 1.0);
-	velocityMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+    velocityMap.shader(velocityAdvectShader);
+    velocityAdvectShader.setUniform("uTexture", velocityMap);
+    velocityAdvectShader.setUniform("uVelocity", velocityMap);
+    velocityAdvectShader.setUniform("uFloat", 1.0);
+    velocityMap.rect(
+        -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
 
     // Pressure
-	pressureMap.shader(pressureShader);
-	pressureShader.setUniform("uVelocity", velocityMap);
-	pressureShader.setUniform("uResolution", gridSize);
-	for (let i = 0; i < 20; i++) {
-		pressureShader.setUniform("uPressure", pressureMap);
-		pressureMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
-	}
+    pressureMap.shader(pressureShader);
+    pressureShader.setUniform("uVelocity", velocityMap);
+    pressureShader.setUniform("uResolution", gridSize);
+    for (let i = 0; i < 20; i++)
+    {
+        pressureShader.setUniform("uPressure", pressureMap);
+        pressureMap.rect(
+            -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
+    }
     // Projection
-	velocityMap.shader(velocityProjectShader);
-	velocityProjectShader.setUniform("uPressure", pressureMap);
-	velocityProjectShader.setUniform("uVelocity", velocityMap);
-	velocityProjectShader.setUniform("uResolution", gridSize);
-	velocityMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+    velocityMap.shader(velocityProjectShader);
+    velocityProjectShader.setUniform("uPressure", pressureMap);
+    velocityProjectShader.setUniform("uVelocity", velocityMap);
+    velocityProjectShader.setUniform("uResolution", gridSize);
+    velocityMap.rect(
+        -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
 
     // Density
-	denseMap.shader(denseDiffuseShader);
-	denseDiffuseShader.setUniform("uTexture", denseMap);
-	denseDiffuseShader.setUniform("uResolution", gridSize);
-	denseDiffuseShader.setUniform("uFloat", 0.1);
-	denseMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+    denseMap.shader(denseDiffuseShader);
+    denseDiffuseShader.setUniform("uTexture", denseMap);
+    denseDiffuseShader.setUniform("uResolution", gridSize);
+    denseDiffuseShader.setUniform("uFloat", 0.1);
+    denseMap.rect(-gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
 
-	// Density/advection
-	denseMap.shader(denseAdvectShader);
-	denseAdvectShader.setUniform("uTexture", denseMap);
-	denseAdvectShader.setUniform("uVelocity", velocityMap);
-	denseAdvectShader.setUniform("uFloat", 0.998);
-	denseMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+    // Density/advection
+    denseMap.shader(denseAdvectShader);
+    denseAdvectShader.setUniform("uTexture", denseMap);
+    denseAdvectShader.setUniform("uVelocity", velocityMap);
+    denseAdvectShader.setUniform("uFloat", 0.998);
+    denseMap.rect(-gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
 
     // Finally display
     // TODO: move to half-float FBO, add bloom, tonemap
-	const col = color(`hsb(${frameCount%360}, 50%, 50%)`);
-	displayShader.setUniform("uSourceColor", [col._getRed() / 255, col._getGreen() / 255, col._getBlue() / 255]);
-	displayShader.setUniform("uTexture", denseMap);
-	rect(-width/2, -height/2, width, height);
+    const col = color(`hsb(${frameCount % 360}, 50%, 50%)`);
+    displayShader.setUniform(
+        "uSourceColor",
+        [ col._getRed() / 255, col._getGreen() / 255, col._getBlue() / 255 ]);
+    displayShader.setUniform("uTexture", denseMap);
+    rect(-width / 2, -height / 2, width, height);
 
     if (isHostConnected(display = true))
     {
@@ -248,16 +258,16 @@ function draw()
     }
     // this might need to be moved with the other text into the actual shader
     // if we don"t find a way to overlay the image over the rectangle
-    displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);   
- 
-    if(debug)
+    displayCustomAddress(color(255, 180), 12, 10, screen_height - 14);
+
+    if (debug)
     {
         document.getElementById("qrcode").innerHTML = qr_img;
     }
     else
     {
         tagDiv.html(qr_img);
-    }  
+    }
 }
 
 function onClientConnect(data)
@@ -408,8 +418,9 @@ function processTouchDrag(data)
         text("Process touch & drag:");
         if (data != null)
         {
-            //text(`Process touch & drag: x coord = ${data.x_coord}, movedX = ${data.x_motion}`);
-            //text(`Process touch & drag: y coord = ${data.y_coord}, movedX = ${data.y_motion}`);
+            // text(`Process touch & drag: x coord = ${data.x_coord}, movedX =
+            // ${data.x_motion}`); text(`Process touch & drag: y coord =
+            // ${data.y_coord}, movedX = ${data.y_motion}`);
         }
     }
 
@@ -419,24 +430,27 @@ function processTouchDrag(data)
             data.x_coord / width * gridSize[0],
             (height - data.y_coord) / height * gridSize[1] // swapped Y in GLSL
         ];
-        
+
         velocityMap.shader(velocityAddShader);
         velocityAddShader.setUniform("uTexture", velocityMap);
-        velocityAddShader.setUniform("uSourse",[
+        velocityAddShader.setUniform("uSourse", [
             constrain(data.x_coord / 10.0, -0.5, 0.5),
-            constrain(data.y_coord / 10.0, -0.5, 0.5), 0]
-            );
+            constrain(data.y_coord / 10.0, -0.5, 0.5),
+            0
+        ]);
 
         velocityAddShader.setUniform("uMouse", mousePos);
-        velocityAddShader.setUniform("uWindowsize", [width, height]);
-        velocityMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
-        
+        velocityAddShader.setUniform("uWindowsize", [ width, height ]);
+        velocityMap.rect(
+            -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
+
         denseMap.shader(denseAddShader);
         denseAddShader.setUniform("uTexture", denseMap);
-        denseAddShader.setUniform("uSourse", [0.2, 0, 0]);
+        denseAddShader.setUniform("uSourse", [ 0.2, 0, 0 ]);
         denseAddShader.setUniform("uMouse", mousePos);
-        denseAddShader.setUniform("uWindowsize", [width, height]);
-        denseMap.rect(-gridSize[0]/2, -gridSize[1]/2, gridSize[0], gridSize[1]);
+        denseAddShader.setUniform("uWindowsize", [ width, height ]);
+        denseMap.rect(
+            -gridSize[0] / 2, -gridSize[1] / 2, gridSize[0], gridSize[1]);
     }
 }
 
@@ -471,7 +485,6 @@ function displayCustomAddress(textcolor, font_size, xpos, ypos)
         ypos);
     pop();
 }
-
 
 // This is included for testing purposes to demonstrate that
 // messages can be sent from a host back to all connected clients
