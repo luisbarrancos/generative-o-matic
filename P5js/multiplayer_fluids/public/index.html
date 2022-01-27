@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width"> -->
+    <!-- socket.io -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <!-- p5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.min.js"></script>
+    <!-- p5.touchgui -->
+    <script src="https://unpkg.com/p5.touchgui@0.5.2/lib/p5.touchgui.js"></script>
+    <!-- p5.multiplayer-->
+    <script src="lib/p5.multiplayer.js"></script>
+    <!-- QRcode -->
+    <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
+    <!-- extra functions, FFT -->
+    <script src="libraries/p5.func.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .bottom-bar {
+            height: 130px;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            color: white;
+            background-color: #24242449;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1;
+        }
+
+        #url {
+            font-weight: bold;
+            font-size: 2em;
+        }
+
+        .col1 {
+            width: 90%;
+            height: 100%;
+        }
+
+        .col2 {
+            height: 100%;
+        }
+    </style>
+    <!-- https://creative-coding.decontextualize.com/mobile/ -->
+    <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
+</head>
+
+<body>
+    <script src="js/logger.js"></script>
+    <script src="palette.js"></script>
+    <script src="mathutils.js"></script>
+    <script src="oscillators.js"></script>
+    <script src="visuals.js"></script>
+    <script src="game.js"></script>
+    <!-- script to set coordX, coordY for touch, accessible to P5.js -->
+    <script>
+        var coordX = 0;
+        var coordY = 0;
+        
+        window.onmousemove = coordHandler;
+        window.ontouchstart = coordHandler;
+        window.ontouchmove = coordHandler;
+        
+        function coordHandler(event) {
+            switch (event.type) {
+                case 'mousemove':
+                    coordX = event.clientX;
+                    coordY = event.clientY;
+                    break;
+                case 'touchstart':
+                case 'touchmove':
+                    var firstTouch = event.touches[0];
+                    coordX = firstTouch.clientX;
+                    coordY = firstTouch.clientY;
+                    break;
+            }
+        }
+    </script>
+    <div id="canvas">
+        <script src="index.js"></script>
+    </div>
+    <div class="bottom-bar">
+        <div class="col1">
+            <div id="url"></div>
+            <div style="height: 100%; width: 85%; display: inline-block;">
+                <span style="font-weight: bold;">Console:</span>
+                <div id="log" style="height: 80px; overflow-y: scroll;"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
