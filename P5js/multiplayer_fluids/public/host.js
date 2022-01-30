@@ -1,20 +1,3 @@
-/*
-p5.multiplayer - HOST
-
-This 'host' sketch is intended to be run in desktop browsers.
-It connects to a node server via socket.io, from which it receives
-rerouted input data from all connected 'clients'.
-
-Navigate to the project's 'public' directory.
-Run http-server -c-1 to start server. This will default to port 8080.
-Run http-server -c-1 -p80 to start server on open port 80.
-
-*/
-
-////////////
-// Network Settings
-// const serverIp      = 'https://yourservername.herokuapp.com';
-// const serverIp      = 'https://yourprojectname.glitch.me';
 
 const serverIp   = "192.168.0.3";
 const serverPort = "3000";
@@ -65,7 +48,7 @@ function setup()
     {
         p5.disableFriendlyErrors = false;
         setuplogger();
-        console.log('Initializing...');
+        console.log("Initializing...");
     }
     else
     {
@@ -78,6 +61,7 @@ function setup()
     // canvas.position(0, 0);
     angleMode(RADIANS);
     frameRate(frame_rate);
+    fill(255, 127, 50);
     background(0);
 
     // qrcode for server, room
@@ -94,10 +78,6 @@ function setup()
 
 function draw()
 {
-    clear();
-    fill(255, 127, 50);
-    background(0);
-
     if (isHostConnected(display = true))
     {
         // Host/Game draw here. --->
@@ -107,11 +87,38 @@ function draw()
         // Update and draw game objects
         // game.draw();
         // <----
-        // game.draw();
     }
+
+    // every 2 seconds, randomize one wave from a block of a player
+    randomize_wave();
+    // normalize times players and number of oscillators
+    normalize_all_waves();
 
     displayCustomAddress(color(255, 180), 12, 10, screen_height - 14)
     document.getElementById("qrcode").innerHTML = qr_img;
+}
+
+function randomize_wave()
+{
+    if (frameCount % (2 * frame_rate) == 0)
+    {
+        Object.entries(game.players).forEach(([ key, value ]) => {
+            if (Math.random() < 0.333)
+            {
+                value.oscillators.randomize();
+            }
+        });
+    }
+}
+
+function normalize_all_waves()
+{
+    Object.entries(game.players).forEach(([ key, value ]) => {
+        const denom = game.numPlayers * value.oscillators.oscillators.length;
+        value.oscillators.normalization = 1.0 / denom;
+        value.oscillators.update_all_amplitudes(
+            value.oscillators.normalization);
+    });
 }
 
 function onClientConnect(data)

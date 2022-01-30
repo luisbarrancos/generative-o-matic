@@ -1,3 +1,21 @@
+/*
+    Client sketch class for CFD interactive simulation.
+    Copyright (C) 2022 Luis Barrancos
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 "use strict";
 
 // TODO
@@ -15,7 +33,8 @@ var half_height = screen_height / 2;
 const frame_rate = 25;
 
 // enable to debug
-const debug = false;
+const debug              = false;
+p5.disableFriendlyErrors = true;
 
 // network tests
 const serverIp   = "192.168.0.3";
@@ -80,16 +99,27 @@ function setup()
 {
     if (debug)
     {
+        p5.disableFriendlyErrors = false;
         setuplogger();
-        console.log('Initializing...');
+        console.log("Initializing...");
+    }
+    else
+    {
+        p5.disableFriendlyErrors = true;
     }
 
     // noCanvas();
-    let canvas    = createCanvas(windowWidth, windowHeight);
-    screen_width  = windowWidth;
-    screen_height = windowHeight;
-    half_width    = screen_width / 2;
-    half_height   = screen_height / 2;
+    // let canvas    = createCanvas(windowWidth, windowHeight);
+    createMetaTag();
+    let canvas = createCanvas(window.innerWidth, window.innerHeight);
+
+    // screen_width  = windowWidth;
+    // screen_height = windowHeight;
+    screen_width  = window.innerWidth;
+    screen_height = window.innerHeight;
+
+    half_width  = screen_width / 2;
+    half_height = screen_height / 2;
 
     canvas.position(0, 0);
     // setup player colors and other client variables
@@ -209,6 +239,7 @@ function touchMoved()
         console.log(`Touched at X = ${mouseX}, Y = ${mouseY}, cX = ${
             coordX}, cY = ${coordY}`);
     }
+
     let coords = {
         "xcoord" : mouseX / windowWidth,
         "ycoord" : 1 - (mouseY / windowHeight),
@@ -219,7 +250,8 @@ function touchMoved()
         // "xpcoord" : pmouseX,
         // "ypcoord" : pmouseY,
         "playercolor" : player_colors.active_color,
-    }
+    };
+
     sendData("touch_drag", coords);
 
     // return false to prevent scrolling on mobile ?
@@ -302,6 +334,7 @@ function mouseClicked(event)
         "ycoord" : 1 - (mouseY / windowHeight / 2),
         "playercolor" : player_colors.active_color,
     };
+
     sendData("input_coords", input_coords);
 }
 
@@ -361,3 +394,15 @@ function mouseMoved(event)
 document.ontouchmove = function(event) {
     event.preventDefault();
 };
+
+function createMetaTag()
+{
+    let meta = createElement('meta');
+    meta.attribute('name', 'viewport');
+    meta.attribute(
+        'content',
+        'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
+
+    let head = select('head');
+    meta.parent(head);
+}

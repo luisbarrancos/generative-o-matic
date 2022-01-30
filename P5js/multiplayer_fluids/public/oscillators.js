@@ -1,16 +1,30 @@
+/*
+    P5.sound oscillator class and related for the waveform banks.
+    Copyright (C) 2022 Luis Barrancos
 
-const effects = false;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 class Oscillators
 {
-    constructor(min_frequency = 40, max_frequency = 400)
+    constructor(min_frequency = 20, max_frequency = 200)
     {
         this.num_oscillators = 15;
         this.oscillators     = [];
-        this.delays          = [];
-        this.reverbs         = [];
         this.min_frequency   = min_frequency;
         this.max_frequency   = max_frequency;
+        this.normalization   = 1.0 / this.num_oscillators;
         this.num_steps       = 64;
         this.fft_delta       = Math.ceil(
             (this.max_frequency - this.min_frequency) / this.num_steps);
@@ -29,28 +43,13 @@ class Oscillators
                 // TODO replace this random() call
                 osc.freq(
                     Math.round(random(this.min_frequency, this.max_frequency)));
-                osc.amp(1.0 / this.num_oscillators)
-                    / this.num_players; // normalize
+                // Normalize
+                osc.amp(
+                    MathUtils.clamp(Math.random(), 0.0, 1.0)
+                    * this.normalization);
                 // we can start, or pipe to effects
                 osc.start();
-
-                if (effects)
-                {
-                    // delay connect to reverb, reverb to osc
-                    let reverb = new p5.Reverb(3, 2);
-                    let delay  = new p5.Delay(0.12, 0.7, 1500);
-                    delay.disconnect()
-                    delay.connect(reverb);
-                    osc.disconnect();
-                    osc.connect(delay);
-                    this.oscillators.push(osc);
-                    this.delays.push(delay);
-                    this.reverbs.push(reverb);
-                }
-                else
-                {
-                    this.oscillators.push(osc);
-                }
+                this.oscillators.push(osc);
             }
             this.playing = true;
         }
@@ -71,24 +70,22 @@ class Oscillators
                 this.oscillators[i].start();
             }
         }
+        this.playing = true;
     }
 
-    stop()
+    stop(clear = false)
     {
         if (this.oscillators.length != 0)
         {
             for (let i = 0; i < this.oscillators.length; i++)
             {
-                if (effects == true)
-                {
-                    this.oscillators[i].disconnect();
-                    this.delays[i].disconnect();
-                    this.oscillators[i].stop();
-                }
-                else
-                {
-                    this.oscillators[i].stop();
-                }
+                this.oscillators[i].stop();
+            }
+            this.playing = false;
+
+            if (clear == true)
+            {
+                this.oscillators = [];
             }
         }
     }
@@ -98,11 +95,14 @@ class Oscillators
     // frequencies with mouse pressed
     randomize()
     {
-        const chosen = Math.max(0, Math.floor(
-            Math.random() * this.num_oscillators));
+        const chosen =
+            Math.max(0, Math.floor(Math.random() * this.num_oscillators));
+
         this.oscillators[chosen].freq(
             Math.round(random(this.min_frequency, this.max_frequency)));
-        this.oscillators[chosen].amp(Math.random() / this.num_oscillators);
+
+        this.oscillators[chosen].amp(
+            MathUtils.clamp(Math.random(), 0.0, 1.0) * this.normalization);
     }
 
     update_waveform(frequency, amplitude, wavetype)
@@ -114,11 +114,17 @@ class Oscillators
 
             this.oscillators[chosen].freq(MathUtils.clamp(
                 frequency, this.min_frequency, this.max_frequency));
-                
+
             this.oscillators[chosen].amp(
-                MathUtils.clamp(amplitude, 0.0, 1.0) / this.num_oscillators);
+                MathUtils.clamp(amplitude, 0.0, 1.0) * this.normalization);
+
             this.oscillators[chosen].setType(wavetype);
         }
+    }
+
+    update_all_amplitudes(amplitude)
+    {
+        this.oscillators.forEach((element) => { element.amp(amplitude); });
     }
 
     update_wavetype(wavetype)
@@ -127,6 +133,7 @@ class Oscillators
         {
             const chosen =
                 Math.max(0, Math.floor((Math.random() * this.num_oscillators)));
+
             this.oscillators[chosen].setType(wavetype);
         }
     }
@@ -138,9 +145,11 @@ class Oscillators
             let wave_index =
                 (ndx != null || ndx === "undefined")
                     ? ndx
-                    : Math.max(0, Math.floor(Math.random() * this.num_oscillators));
-    
+                    : Math.max(
+                        0, Math.floor(Math.random() * this.num_oscillators));
+
             const frequency = this.oscillators[wave_index].getFreq();
+
             this.oscillators[wave_index].freq(MathUtils.clamp(
                 scale * frequency, this.min_frequency, this.max_frequency));
         }

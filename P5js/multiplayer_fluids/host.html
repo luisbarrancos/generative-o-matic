@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width"> -->
+  <!-- socket.io -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" type="text/javascript" ></script>
+  <!-- p5 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js" type="text/javascript" ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js" type="text/javascript" ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.min.js" type="text/javascript" ></script>
+  <!-- p5.touchgui -->
+  <script src="https://unpkg.com/p5.touchgui@0.5.2/lib/p5.touchgui.js" type="text/javascript" ></script>
+  <!-- p5.play -->
+  <script src="lib/p5.play.js" type="text/javascript" ></script>
+  <!-- p5.multiplayer-->
+  <script src="lib/p5.multiplayer.js" type="text/javascript" ></script>
+  <!-- p5.multiplayer-->
+  <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js" type="text/javascript" ></script>
+  <!-- p5 sketch -->
+  <script src="mathutils.js" type="text/javascript" ></script>
+  <script src="oscillators.js" type="text/javascript" ></script>
+  <script src="game.js" type="text/javascript" ></script>
+  <script src="visuals.js" type="text/javascript" ></script>
+  <script src="host.js" type="text/javascript" ></script>
+  <script src="lib/dat.gui.min.js" type="text/javascript" ></script>
+  <script>
+    window.ga = window.ga || function () {
+      (ga.q = ga.q || []).push(arguments)
+    };
+    ga.l = +new Date;
+    ga('create', 'UA-105392568-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .bottom-bar {
+      height: 130px;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      color: white;
+      background-color: #24242449;
+      display: flex;
+      justify-content: space-between;
+      z-index: 1;
+    }
+
+    #url {
+      font-weight: bold;
+      font-size: 2em;
+    }
+
+    .col1 {
+      width: 90%;
+      height: 100%;
+    }
+
+    .col2 {
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bottom-bar">
+    <div class="col1">
+      <div id="url"></div>
+      <div style="height: 100%; width: 85%; display: inline-block;">
+        <span style="font-weight: bold;">Console:</span>
+        <div id="log" style="height: 80px; overflow-y: scroll;"></div>
+      </div>
+    </div>
+    -->
+    <div class="col2">
+      <div id="qrcode" style="z-index:100; display: flex; justify-content: center;"></div>
+    </div>
+  </div>
+  <canvas></canvas>
+
+
+<!-- Mother of God, pls forgive me -->
+<div class="promo">
+  <div class="promo-middle">
+      <div class="promo-content">
+          <div class="promo-header">
+              <span class="promo-close">&times;</span>
+          </div>
+          <div class="promo-body">
+          </div>
+      </div>
+  </div>
+</div>
+</body>
+<script src="js/logger.js"></script>
+<script src="script.js"></script>
+
+</html>
