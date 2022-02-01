@@ -330,8 +330,8 @@ function mouseClicked(event)
     }
 
     const input_coords = {
-        "xcoord" : mouseX / windowWidth / 2,
-        "ycoord" : 1 - (mouseY / windowHeight / 2),
+        "xcoord" : mouseX / windowWidth , // /2?
+        "ycoord" : 1 - (mouseY / windowHeight ), // /2?
         "playercolor" : player_colors.active_color,
     };
 
@@ -395,14 +395,11 @@ document.ontouchmove = function(event) {
     event.preventDefault();
 };
 
-function createMetaTag()
-{
-    let meta = createElement('meta');
-    meta.attribute('name', 'viewport');
-    meta.attribute(
-        'content',
-        'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
+function createMetaTag() {
+	let meta = createElement('meta');
+	meta.attribute('name', 'viewport');
+	meta.attribute('content', 'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
 
-    let head = select('head');
-    meta.parent(head);
+	let head = select('head');
+	meta.parent(head);
 }
