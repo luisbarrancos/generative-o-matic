@@ -20,6 +20,10 @@ However, the entire structure is already in-place and ready to run.
 
 6. Scan the QR code with your mobile, it should go to i.e, ```http://192.168.0.3:3000/?=sdi4``` which is the hardcoded *room* name.
 
+## Notes
+
+Tried on Firefox, Chrome. You should see a virtual "bubble level" moving in your mobile phone. If you see a large static circle within a circle, without any motion whatsoever, check your device permissions. You need access to the mobile phone sensors in order to get their data.
+
 ## Authors
 
  * Luis Barrancos, p5 host, client
