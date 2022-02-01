@@ -22,9 +22,9 @@ However, the entire structure is already in-place and ready to run.
 
 ## Authors
 
-Luis Barrancos, p5 host, client
-José Magalháes, server & CFD integration
-Pavel Dobryakov, CFD GLSL
+ * Luis Barrancos, p5 host, client
+ * José Magalháes, server & CFD integration
+ * Pavel Dobryakov, CFD GLSL
 
 ## Licenses
 
