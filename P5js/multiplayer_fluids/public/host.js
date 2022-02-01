@@ -1,19 +1,19 @@
 
-const serverIp = "192.168.0.3";
+const serverIp   = "192.168.0.3";
 const serverPort = "3000";
-const local = true;
+const local      = true;
 let game;
 
 // essential UI parameters
-const screen_width = this.windowWidth;
+const screen_width  = this.windowWidth;
 const screen_height = this.windowHeight;
 
-const frame_rate = 25;
-const half_width = screen_width / 2;
+const frame_rate  = 25;
+const half_width  = screen_width / 2;
 const half_height = screen_height / 2;
 
 // enable to debug
-let debug = "false";
+let debug                = "false";
 p5.disableFriendlyErrors = true;
 
 // sound synthesis related
@@ -42,20 +42,27 @@ function preload()
     font = loadFont("assets/RobotoMono-Regular.ttf");
 }
 
-function setup() {
-    if (localStorage.getItem("debug") === null) {
+function setup()
+{
+    if (localStorage.getItem("debug") === null)
+    {
         debug = false;
         localStorage.setItem("debug", "false");
-    } else {
+    }
+    else
+    {
         debug = localStorage.getItem("debug");
     }
 
-    if (debug === "true") {
+    if (debug === "true")
+    {
         p5.disableFriendlyErrors = false;
         setuplogger();
         console.log("Initializing...");
-    } else {
-        p5.disableFriendlyErrors = true;
+    }
+    else
+    {
+        p5.disableFriendlyErrors                                 = true;
         document.getElementById("loggerbottombar").style.display = "none";
     }
 
@@ -99,11 +106,11 @@ function draw()
     normalize_all_waves();
 
     displayCustomAddress(color(255, 180), 12, 10, screen_height - 14)
-    if (debug === "true") {
+    if (debug === "true")
+    {
         document.getElementById("qrcode").innerHTML = qr_img;
-    } else {
-        document.getElementById("qrcode_nodebug").innerHTML = qr_img;
     }
+    else { document.getElementById("qrcode_nodebug").innerHTML = qr_img; }
 }
 
 function randomize_wave()
