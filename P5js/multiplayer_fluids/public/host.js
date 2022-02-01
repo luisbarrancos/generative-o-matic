@@ -13,7 +13,7 @@ const half_width  = screen_width / 2;
 const half_height = screen_height / 2;
 
 // enable to debug
-const debug              = false;
+let debug                = "false";
 p5.disableFriendlyErrors = true;
 
 // sound synthesis related
@@ -44,7 +44,17 @@ function preload()
 
 function setup()
 {
-    if (debug)
+    if (localStorage.getItem("debug") === null)
+    {
+        debug = false;
+        localStorage.setItem("debug", "false");
+    }
+    else
+    {
+        debug = localStorage.getItem("debug");
+    }
+
+    if (debug === "true")
     {
         p5.disableFriendlyErrors = false;
         setuplogger();
@@ -52,7 +62,8 @@ function setup()
     }
     else
     {
-        p5.disableFriendlyErrors = true;
+        p5.disableFriendlyErrors                                 = true;
+        document.getElementById("loggerbottombar").style.display = "none";
     }
 
     // main canvas goes to the script GLSL
@@ -95,7 +106,11 @@ function draw()
     normalize_all_waves();
 
     displayCustomAddress(color(255, 180), 12, 10, screen_height - 14)
-    document.getElementById("qrcode").innerHTML = qr_img;
+    if (debug === "true")
+    {
+        document.getElementById("qrcode").innerHTML = qr_img;
+    }
+    else { document.getElementById("qrcode_nodebug").innerHTML = qr_img; }
 }
 
 function randomize_wave()

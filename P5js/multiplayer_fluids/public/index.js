@@ -330,8 +330,8 @@ function mouseClicked(event)
     }
 
     const input_coords = {
-        "xcoord" : mouseX / windowWidth / 2,
-        "ycoord" : 1 - (mouseY / windowHeight / 2),
+        "xcoord" : mouseX / windowWidth,        // /2?
+        "ycoord" : 1 - (mouseY / windowHeight), // /2?
         "playercolor" : player_colors.active_color,
     };
 
