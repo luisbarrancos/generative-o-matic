@@ -20,3 +20,13 @@ However, the entire structure is already in-place and ready to run.
 
 6. Scan the QR code with your mobile, it should go to i.e, ```http://192.168.0.3:3000/?=sdi4``` which is the hardcoded *room* name.
 
+## Authors
+
+Luis Barrancos, p5 host, client
+José Magalháes, server & CFD integration
+Pavel Dobryakov, CFD GLSL
+
+## Licenses
+
+GNU GPLv3 unless stated otherwise, namely, Pavel Dobryakov's MIT licensed GLSL code.
+
