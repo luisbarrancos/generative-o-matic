@@ -1,9 +1,14 @@
 "use strict";
 
 // essential UI parameters
-const screen_width  = 512;
-const screen_height = 512;
-const frame_rate    = 25;
+var screen_width  = 512;
+var screen_height = 512;
+//
+var half_width  = screen_width / 2;
+var half_height = screen_height / 2;
+
+const frame_rate  = 60;
+
 // enable to debug
 const debug = false;
 
@@ -23,6 +28,34 @@ let emotionData  = null;
 let player_color, player_color_dim;
 let player_colors;
 
+
+// A click is needed for the device to request permission
+if (typeof DeviceMotionEvent.requestPermission === 'function')
+{
+    document.body.addEventListener('click', function() {
+        DeviceMotionEvent.requestPermission()
+            .then(function() {
+                console.log('DeviceMotionEvent enabled');
+
+                motion = true;
+                ios    = true;
+            })
+            .catch(function(error) {
+                console.warn('DeviceMotionEvent not enabled', error);
+            })
+    })
+}
+else
+{
+    // we are not on ios13 and above
+    // todo
+    // add detection for hardware for other devices
+    // if(got the hardware) {
+    // motion = true;
+    // }
+}
+
+
 function set_player_colors()
 {
     let hue = random(0, 360);
@@ -40,8 +73,13 @@ function preload()
 
 function setup()
 {
-    // noCanvas();
+	createMetaTag();
+    screen_width = window.innerWidth;
+    screen_height = window.innerHeight;
+    half_width    = screen_width / 2;
+    half_height   = screen_height / 2;
     let canvas = createCanvas(screen_width, screen_height);
+
     canvas.position(0, 0);
     background(255, 0, 0);
     frameRate(frame_rate);
@@ -76,9 +114,11 @@ function setup()
         },
         audio : false
     };
+
     let video_input = createCapture(constraints);
     video_input.size(width, height);
     video_input.position(0, 0);
+
     // video_input.elt.setAttribute("playsinline", ""); // apparently for iphone
     // compat (!)
     video_input.hide();
@@ -223,14 +263,29 @@ function windowResized()
     resizeCanvas(windowWidth, windowHeight);
 }
 
-function mouseMoved(event)
+function mousePressed()
 {
-    ;
+    userStartAudio();
 }
 
-/// Add these lines below sketch to prevent scrolling on mobile
-function touchMoved()
+function mouseMoved(event)
 {
-    // do some stuff
-    return false;
+    ; // userStartAudio() ?
+}
+
+/* prevents the mobile browser from processing some default
+ * touch events, like swiping left for "back" or scrolling
+ * the page.
+ */
+document.ontouchmove = function(event) {
+    event.preventDefault();
+};
+
+function createMetaTag() {
+	let meta = createElement('meta');
+	meta.attribute('name', 'viewport');
+	meta.attribute('content', 'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
+
+	let head = select('head');
+	meta.parent(head);
 }

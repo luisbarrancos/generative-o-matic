@@ -292,9 +292,9 @@ function deviceMoved(event)
         "z_accel" : accelerationZ,
         "playercolor" : player_colors.active_color,
     };
+
     // This sends the mobile phone bubble level orientation as X,Y coords for
     // the splatting - but it rapidly fills the screen.
-
     sendData("device_sensors", device_motion);
 }
 
@@ -320,6 +320,7 @@ function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
 }
+
 window.addEventListener("deviceorientation", function(ev) {
     if (debug)
     {
