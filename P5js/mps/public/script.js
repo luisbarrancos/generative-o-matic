@@ -56,13 +56,13 @@ let config =
       SIM_RESOLUTION : 256, // 256 is ok
       DYE_RESOLUTION : 1024,
       CAPTURE_RESOLUTION : 128,
-      DENSITY_DISSIPATION : 2,    // 2 faster
-      VELOCITY_DISSIPATION : 0.02, // 0.05
+      DENSITY_DISSIPATION : 0.5,    // 2 faster
+      VELOCITY_DISSIPATION : 0.01, // 0.05
       PRESSURE : 0.98,             // pressure 0.98 works like fluid, denser
-      PRESSURE_ITERATIONS : 30,
+      PRESSURE_ITERATIONS : 100,
       CURL : 50, // 200 more floral, with higher pressure
       SPLAT_RADIUS : 0.35,
-      SPLAT_FORCE : 3000,
+      SPLAT_FORCE : 60,
       SHADING : true,
       COLORFUL : false,
       COLOR_UPDATE_SPEED : 20,
@@ -77,8 +77,8 @@ let config =
       BLOOM_THRESHOLD : 0.6,
       BLOOM_SOFT_KNEE : 0.7,
       SUNRAYS : true,
-      SUNRAYS_RESOLUTION : 196,
-      SUNRAYS_WEIGHT : 1.0,
+      SUNRAYS_RESOLUTION : 512,
+      SUNRAYS_WEIGHT : 2.0,
     }
 
 function
@@ -528,18 +528,15 @@ const displayShaderSource = `
         //vec3 l = vec3(0.0, 0.0, 1.0);
         vec3 l = vec3(0.1, 0.8, 0.9);
         float ldotn = dot(n, l);
-
+        // add 3 Buratti limb darkening like terms
         float d = max(0.66, ldotn);
-        d *= d;
-        c *= d;
+        c = c * d * d;
         l = vec3(0.6, 0.3, 0.1);
         d = max(0.66, ldotn);
-        d *= d;
-        c *= d;
+        c = c * d * d;
         l = vec3(0.9, 0.8, 0.2);
         d = max(0.66, ldotn);
-        d *= d;
-        c *= d;
+        c = c * d * d;
     #endif
 
     #ifdef BLOOM
