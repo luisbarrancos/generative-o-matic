@@ -1,3 +1,20 @@
+/*
+    P5.sound oscillator class and related for the waveform banks.
+    Copyright (C) 2022 Luis Barrancos
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 class Oscillators
 {
@@ -27,7 +44,9 @@ class Oscillators
                 osc.freq(
                     Math.round(random(this.min_frequency, this.max_frequency)));
                 // Normalize
-                osc.amp(MathUtils.clamp(Math.random(), 0.0, 1.0) * this.normalization);
+                osc.amp(
+                    MathUtils.clamp(Math.random(), 0.0, 1.0)
+                    * this.normalization);
                 // we can start, or pipe to effects
                 osc.start();
                 this.oscillators.push(osc);
@@ -83,7 +102,7 @@ class Oscillators
             Math.round(random(this.min_frequency, this.max_frequency)));
 
         this.oscillators[chosen].amp(
-            MathUtils.clamp(Math.random(), 0.0, 1.0) *  this.normalization);
+            MathUtils.clamp(Math.random(), 0.0, 1.0) * this.normalization);
     }
 
     update_waveform(frequency, amplitude, wavetype)
@@ -105,11 +124,7 @@ class Oscillators
 
     update_all_amplitudes(amplitude)
     {
-        this.oscillators.forEach(
-            (element) => {
-                element.amp(amplitude);
-            }
-        );
+        this.oscillators.forEach((element) => { element.amp(amplitude); });
     }
 
     update_wavetype(wavetype)

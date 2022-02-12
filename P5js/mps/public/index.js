@@ -1,3 +1,20 @@
+/*
+    Client sketch class for CFD interactive simulation.
+    Copyright (C) 2022 Luis Barrancos
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 "use strict";
 
@@ -16,7 +33,8 @@ var half_height = screen_height / 2;
 const frame_rate = 25;
 
 // enable to debug
-const debug = false;
+const debug              = false;
+p5.disableFriendlyErrors = true;
 
 // network tests
 const serverIp   = "192.168.0.3";
@@ -81,22 +99,27 @@ function setup()
 {
     if (debug)
     {
+        p5.disableFriendlyErrors = false;
         setuplogger();
         console.log("Initializing...");
     }
+    else
+    {
+        p5.disableFriendlyErrors = true;
+    }
 
     // noCanvas();
-    //let canvas    = createCanvas(windowWidth, windowHeight);
-	createMetaTag();
-	let canvas = createCanvas(window.innerWidth, window.innerHeight);
+    // let canvas    = createCanvas(windowWidth, windowHeight);
+    createMetaTag();
+    let canvas = createCanvas(window.innerWidth, window.innerHeight);
 
-    //screen_width  = windowWidth;
-    //screen_height = windowHeight;
-    screen_width = window.innerWidth;
+    // screen_width  = windowWidth;
+    // screen_height = windowHeight;
+    screen_width  = window.innerWidth;
     screen_height = window.innerHeight;
 
-    half_width    = screen_width / 2;
-    half_height   = screen_height / 2;
+    half_width  = screen_width / 2;
+    half_height = screen_height / 2;
 
     canvas.position(0, 0);
     // setup player colors and other client variables
@@ -292,9 +315,9 @@ function deviceMoved(event)
         "z_accel" : accelerationZ,
         "playercolor" : player_colors.active_color,
     };
-
     // This sends the mobile phone bubble level orientation as X,Y coords for
     // the splatting - but it rapidly fills the screen.
+
     sendData("device_sensors", device_motion);
 }
 
@@ -307,8 +330,8 @@ function mouseClicked(event)
     }
 
     const input_coords = {
-        "xcoord" : mouseX / windowWidth / 2,
-        "ycoord" : 1 - (mouseY / windowHeight / 2),
+        "xcoord" : mouseX / windowWidth,        // /2?
+        "ycoord" : 1 - (mouseY / windowHeight), // /2?
         "playercolor" : player_colors.active_color,
     };
 
@@ -320,7 +343,6 @@ function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
 }
-
 window.addEventListener("deviceorientation", function(ev) {
     if (debug)
     {
@@ -373,11 +395,14 @@ document.ontouchmove = function(event) {
     event.preventDefault();
 };
 
-function createMetaTag() {
-	let meta = createElement('meta');
-	meta.attribute('name', 'viewport');
-	meta.attribute('content', 'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
+function createMetaTag()
+{
+    let meta = createElement('meta');
+    meta.attribute('name', 'viewport');
+    meta.attribute(
+        'content',
+        'user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,height=device-height');
 
-	let head = select('head');
-	meta.parent(head);
+    let head = select('head');
+    meta.parent(head);
 }
