@@ -56,11 +56,11 @@ let config =
       SIM_RESOLUTION : 512, // 256 is ok
       DYE_RESOLUTION : 1024,
       CAPTURE_RESOLUTION : 512,
-      DENSITY_DISSIPATION : 0.005,    // 2 faster
-      VELOCITY_DISSIPATION : 0.001, // 0.05
+      DENSITY_DISSIPATION : 0.05,    // 2 faster
+      VELOCITY_DISSIPATION : 0.1, // 0.05
       PRESSURE : 0.98,             // pressure 0.98 works like fluid, denser
       PRESSURE_ITERATIONS : 100,
-      CURL : -20, // 200 more floral, with higher pressure
+      CURL : 90, // 200 more floral, with higher pressure
       SPLAT_RADIUS : 0.35,
       SPLAT_FORCE : 60,
       SHADING : true,
@@ -72,13 +72,13 @@ let config =
       TRANSPARENT : false,
       BLOOM : true,
       BLOOM_ITERATIONS : 8,
-      BLOOM_RESOLUTION : 256,
-      BLOOM_INTENSITY : 0.8,
+      BLOOM_RESOLUTION : 512,
+      BLOOM_INTENSITY : 0.6,
       BLOOM_THRESHOLD : 0.6,
       BLOOM_SOFT_KNEE : 0.7,
       SUNRAYS : true,
       SUNRAYS_RESOLUTION : 512,
-      SUNRAYS_WEIGHT : 2.0,
+      SUNRAYS_WEIGHT : 1.5,
     }
 
 function
