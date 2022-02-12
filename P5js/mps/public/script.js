@@ -53,24 +53,24 @@ resizeCanvas();
 
 let config =
     {
-      SIM_RESOLUTION : 512, // 256 is ok
+      SIM_RESOLUTION : 256, // 256 is ok
       DYE_RESOLUTION : 1024,
       CAPTURE_RESOLUTION : 128,
       DENSITY_DISSIPATION : 0.5,    // 2 faster
       VELOCITY_DISSIPATION : 0.01, // 0.05
       PRESSURE : 0.98,             // pressure 0.98 works like fluid, denser
       PRESSURE_ITERATIONS : 100,
-      CURL : 50, // 200 more floral, with higher pressure
+      CURL : -20, // 200 more floral, with higher pressure
       SPLAT_RADIUS : 0.35,
       SPLAT_FORCE : 60,
       SHADING : true,
       COLORFUL : false,
       COLOR_UPDATE_SPEED : 20,
       PAUSED : false,
-      //BACK_COLOR : {r : 0, g : 0, b : 0},
-      BACK_COLOR: { r: 190, g: 190, b: 190 },
+      BACK_COLOR : {r : 0, g : 0, b : 0},
+      //BACK_COLOR: { r: 190, g: 190, b: 190 },
       TRANSPARENT : false,
-      BLOOM : false,
+      BLOOM : true,
       BLOOM_ITERATIONS : 8,
       BLOOM_RESOLUTION : 256,
       BLOOM_INTENSITY : 0.8,
@@ -564,7 +564,7 @@ const displayShaderSource = `
         c = vec3(newC.r, newC.g, newC.b);
         c = ACESToneMapper(c);
 
-        gl_FragColor = vec4(c * vec3(0.1, 0.1, 0.1), a);
+        gl_FragColor = vec4(c, a);
     }
 `;
 
