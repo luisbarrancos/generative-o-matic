@@ -53,24 +53,24 @@ resizeCanvas();
 
 let config =
     {
-      SIM_RESOLUTION : 128, // 256 is ok
+      SIM_RESOLUTION : 256, // 256 is ok
       DYE_RESOLUTION : 1024,
-      CAPTURE_RESOLUTION : 512,
-      DENSITY_DISSIPATION : 1,    // 2 faster
-      VELOCITY_DISSIPATION : 0.2, // 0.05
-      PRESSURE : 0.8,             // pressure 0.98 works like fluid, denser
-      PRESSURE_ITERATIONS : 20,
-      CURL : 30, // 200 more floral, with higher pressure
-      SPLAT_RADIUS : 0.25,
-      SPLAT_FORCE : 6000,
+      CAPTURE_RESOLUTION : 128,
+      DENSITY_DISSIPATION : 2,    // 2 faster
+      VELOCITY_DISSIPATION : 0.02, // 0.05
+      PRESSURE : 0.98,             // pressure 0.98 works like fluid, denser
+      PRESSURE_ITERATIONS : 30,
+      CURL : 50, // 200 more floral, with higher pressure
+      SPLAT_RADIUS : 0.35,
+      SPLAT_FORCE : 3000,
       SHADING : true,
       COLORFUL : false,
-      COLOR_UPDATE_SPEED : 10,
+      COLOR_UPDATE_SPEED : 20,
       PAUSED : false,
       BACK_COLOR : {r : 0, g : 0, b : 0},
-      // BACK_COLOR: { r: 120, g: 180, b: 240 },
+      //BACK_COLOR: { r: 190, g: 190, b: 190 },
       TRANSPARENT : false,
-      BLOOM : false,
+      BLOOM : true,
       BLOOM_ITERATIONS : 8,
       BLOOM_RESOLUTION : 256,
       BLOOM_INTENSITY : 0.8,
@@ -525,10 +525,21 @@ const displayShaderSource = `
         float dy = length(tc) - length(bc);
 
         vec3 n = normalize(vec3(dx, dy, length(texelSize)));
-        vec3 l = vec3(0.0, 0.0, 1.0);
+        //vec3 l = vec3(0.0, 0.0, 1.0);
+        vec3 l = vec3(0.1, 0.8, 0.9);
+        float ldotn = dot(n, l);
 
-        float diffuse = clamp(dot(n, l) + 0.7, 0.7, 1.0);
-        c *= diffuse;
+        float d = max(0.66, ldotn);
+        d *= d;
+        c *= d;
+        l = vec3(0.6, 0.3, 0.1);
+        d = max(0.66, ldotn);
+        d *= d;
+        c *= d;
+        l = vec3(0.9, 0.8, 0.2);
+        d = max(0.66, ldotn);
+        d *= d;
+        c *= d;
     #endif
 
     #ifdef BLOOM
