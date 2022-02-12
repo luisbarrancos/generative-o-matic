@@ -1,0 +1,224 @@
+/*
+    P5.sound oscillator class and related for the waveform banks.
+    Copyright (C) 2022 Luis Barrancos
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+class Oscillators
+{
+    constructor(min_frequency = 20, max_frequency = 5000)
+    {
+        this.min_frequency   = min_frequency;
+        this.max_frequency   = max_frequency;
+        this.num_steps       = 64;
+        this.fft_delta       = Math.ceil(
+            (this.max_frequency - this.min_frequency) / this.num_steps);
+        this.init_fft = false;
+        this.playing  = false;
+        this.oscillator = null;
+    }
+
+    create(fft = false)
+    {
+        this.oscillator = new p5.Oscillator();
+        this.oscillator.setType("sine");
+        this.oscillator.freq(Math.round(random(this.min_frequency, this.max_frequency)));
+        this.oscillator.amp(MathUtils.clamp(Math.random(), 0.0, 1.0));
+
+        if (this.oscillators.length == 0)
+        {
+            for (let i = 0; i < this.num_oscillators; i++)
+            {
+                let osc = new p5.Oscillator();
+                osc.setType("sine");
+                // TODO replace this random() call
+                osc.freq(
+                    Math.round(random(this.min_frequency, this.max_frequency)));
+                // Normalize
+                osc.amp(
+                    MathUtils.clamp(Math.random(), 0.0, 1.0)
+                    * this.normalization);
+                // we can start, or pipe to effects
+                osc.start();
+                this.oscillators.push(osc);
+            }
+            this.playing = true;
+        }
+        if (fft == true)
+        {
+            // FFT (0, bins), smoothing, bins=1024, change to 64
+            this.fft      = new p5.FFT();
+            this.init_fft = true;
+        }
+    }
+
+    start()
+    {
+        if (this.oscillators.length != 0 && this.playing == false)
+        {
+            for (let i = 0; i < this.oscillators.length; i++)
+            {
+                this.oscillators[i].start();
+            }
+        }
+        this.playing = true;
+    }
+
+    stop(clear = false)
+    {
+        if (this.oscillators.length != 0)
+        {
+            for (let i = 0; i < this.oscillators.length; i++)
+            {
+                this.oscillators[i].stop();
+            }
+            this.playing = false;
+
+            if (clear == true)
+            {
+                this.oscillators = [];
+            }
+        }
+    }
+
+    // we can map frequencies, from this.oscillator.f , mapped from min freq,
+    // max fre into vertical or horizontal coords, to give some effect randomize
+    // frequencies with mouse pressed
+    randomize()
+    {
+        const chosen =
+            Math.max(0, Math.floor(Math.random() * this.num_oscillators));
+
+        this.oscillators[chosen].freq(
+            Math.round(random(this.min_frequency, this.max_frequency)));
+
+        this.oscillators[chosen].amp(
+            MathUtils.clamp(Math.random(), 0.0, 1.0) * this.normalization);
+    }
+
+    update_waveform(frequency, amplitude, wavetype)
+    {
+        if (this.oscillators.length > 0 && this.playing)
+        {
+            const chosen =
+                Math.max(0, Math.floor((Math.random() * this.num_oscillators)));
+
+            this.oscillators[chosen].freq(MathUtils.clamp(
+                frequency, this.min_frequency, this.max_frequency));
+
+            this.oscillators[chosen].amp(
+                MathUtils.clamp(amplitude, 0.0, 1.0) * this.normalization);
+
+            this.oscillators[chosen].setType(wavetype);
+        }
+    }
+
+    update_all_amplitudes(amplitude)
+    {
+        this.oscillators.forEach((element) => { element.amp(amplitude); });
+    }
+
+    update_wavetype(wavetype)
+    {
+        if (this.oscillators.length > 0 && this.playing)
+        {
+            const chosen =
+                Math.max(0, Math.floor((Math.random() * this.num_oscillators)));
+
+            this.oscillators[chosen].setType(wavetype);
+        }
+    }
+
+    scale_frequency(scale, ndx = null)
+    {
+        if (this.oscillators.length > 0 && this.playing)
+        {
+            let wave_index =
+                (ndx != null || ndx === "undefined")
+                    ? ndx
+                    : Math.max(
+                        0, Math.floor(Math.random() * this.num_oscillators));
+
+            const frequency = this.oscillators[wave_index].getFreq();
+
+            this.oscillators[wave_index].freq(MathUtils.clamp(
+                scale * frequency, this.min_frequency, this.max_frequency));
+        }
+    }
+
+    frequency(ndx)
+    {
+        if (this.playing && this.oscillators.length > 0)
+            return this.oscillators[ndx].getFreq();
+    }
+
+    amplitude(ndx)
+    {
+        if (this.playing && this.oscillators.length > 0)
+            return this.oscillators[ndx].getAmp();
+    }
+
+    update_fft_steps(steps)
+    {
+        this.num_steps = steps;
+        this.fft_delta = Math.ceil(
+            (this.max_frequency - this.min_frequency) / this.num_steps);
+    }
+
+    update_frequency_ranges(minfreq, maxfreq)
+    {
+        this.min_frequency = minfreq;
+        this.max_frequency = maxfreq;
+        this.update_fft_steps(this.num_steps);
+    }
+
+    energy()
+    {
+        if (this.init_fft && this.playing == true)
+        {
+            // the FFT is going to be over the combined waveform, so no need
+            // to specify the isolated oscillator.
+            // analyze([bins],[scale]), bins=1024 (def), scale default [0,255]
+            // https://creative-coding.decontextualize.com/synthesizing-analyzing-sound/
+            // spectrogram from bins. NOTE: analyze MUST be called before
+            // Energy().
+            //
+            let bins            = fft.analyze();
+            let waveform_energy = [];
+
+            for (let i = this.min_frequency; i < this.max_frequency;
+                 i += this.fft_delta)
+            {
+                // foreach band i, where bandwidth of i = (maxf - minf) / delta
+                // get the energy in the band
+                // we can get the energy **at** the frequency, or between
+                // f_(n-1) and f_n which is what we want. It returns energy in
+                // [0,255], remap to [0.0, 1.0]
+                waveform_energy.push(
+                    fft.getEnergy(i, i + this.fft_delta) / 255.0);
+            }
+            return waveform_energy; // will it survive outside call?
+        }
+        return null;
+    }
+
+    waveform()
+    {
+        if (this.init_fft == true && this.playing == true)
+        {
+            return this.fft.waveform();
+        }
+    }
+}

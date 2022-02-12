@@ -23,7 +23,7 @@
 //
 
 "use strict";
-p5.disableFriendlyErrors = true;
+//p5.disableFriendlyErrors = true;
 
 // steps should place more samples on Y or X if the aspect ratio != square
 let x_step;

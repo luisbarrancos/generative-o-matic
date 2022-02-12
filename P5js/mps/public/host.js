@@ -251,6 +251,8 @@ function processMouseClick(data)
     const dy  = 1000 * (Math.random() - 0.5);
     splat(x, y, dx, dy, color);
 
+    // change frequency for each player waveform according to min, max ranges
+    // and mouse click. Same for amplitude
     const frequency = MathUtils.clamp(
         Math.round(
             map(data.xcoord,

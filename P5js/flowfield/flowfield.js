@@ -96,7 +96,7 @@ function Particle()
 
 function draw()
 {
-    background(color(0, 0, 0, 4));
+    background(color(0, 0, 0, 40));
 
     let yoff = start;
 

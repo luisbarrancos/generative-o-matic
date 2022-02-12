@@ -489,6 +489,29 @@ const displayShaderSource = `
         return max(1.055 * pow(color, vec3(0.416666667)) - 0.055, vec3(0));
     }
 
+    vec3 ACESToneMapper(vec3 color)
+    {
+        float slope = 12.0;
+        vec4 x = vec4(
+        // RGB
+        color.r, color.g, color.b,
+        // Luminosity
+        (color.r * 0.299) + (color.g * 0.587) + (color.b * 0.114)
+        );
+
+        const float a = 2.51;
+        const float b = 0.03;
+        const float c = 2.43;
+        const float d = 0.59;
+        const float e = 0.14;
+
+        vec4 tonemap = clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+        float t = x.a;
+        t = t * t / (slope + t);
+
+        return mix(tonemap.rgb, tonemap.aaa, t);
+    }
+
     void main () {
         vec3 c = texture2D(uTexture, vUv).rgb;
 
@@ -529,6 +552,10 @@ const displayShaderSource = `
     #endif
 
         float a = max(c.r, max(c.g, c.b));
+        vec4 newC = vec4(c, a);
+        c = vec3(newC.r, newC.g, newC.b);
+        c = ACESToneMapper(c);
+
         gl_FragColor = vec4(c, a);
     }
 `;
