@@ -53,11 +53,11 @@ resizeCanvas();
 
 let config =
     {
-      SIM_RESOLUTION : 256, // 256 is ok
+      SIM_RESOLUTION : 512, // 256 is ok
       DYE_RESOLUTION : 1024,
-      CAPTURE_RESOLUTION : 128,
-      DENSITY_DISSIPATION : 0.5,    // 2 faster
-      VELOCITY_DISSIPATION : 0.01, // 0.05
+      CAPTURE_RESOLUTION : 512,
+      DENSITY_DISSIPATION : 0.005,    // 2 faster
+      VELOCITY_DISSIPATION : 0.001, // 0.05
       PRESSURE : 0.98,             // pressure 0.98 works like fluid, denser
       PRESSURE_ITERATIONS : 100,
       CURL : -20, // 200 more floral, with higher pressure
