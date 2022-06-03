@@ -25,8 +25,9 @@ function setup()
 
     createCanvas(windowWidth, windowHeight);
     pixelDensity(1);
-    background(0);
+    background(245);
     frameRate(25);
+    blendMode(OVERLAY);
 
     cols = floor(width / scl);
     rows = floor(height / scl);
@@ -96,12 +97,12 @@ function Particle()
 
 function draw()
 {
-    background(color(0, 0, 0, 4));
+    background(color(245, 245, 245, 3));
 
     let yoff = start;
 
     const tdelta = Math.cos(frameCount * 0.01 * TWO_PI) * 0.25 + 0.5; // [0.25,0.50]
-    noiseDetail(2, tdelta * 100.0);
+    noiseDetail(2, tdelta * 10.0);
 
     for (let y = 0; y < rows; y++)
     {
