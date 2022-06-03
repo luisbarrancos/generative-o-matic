@@ -9,7 +9,7 @@ let cols, rows;
 let zoff = 0;
 let fps;
 let particles    = [];
-let numParticles = 5000; // 12500;
+let numParticles = 500; // 12500;
 let flowfield;
 let magOff    = 0;
 let showField = false;
@@ -23,7 +23,7 @@ function setup()
 {
     p5.disableFriendlyErrors = true;
 
-    createCanvas(1280, 720);
+    createCanvas(windowWidth, windowHeight);
     pixelDensity(1);
     background(0);
     frameRate(25);
@@ -100,8 +100,8 @@ function draw()
 
     let yoff = start;
 
-    const tdelta = Math.cos(frameCount * 0.01 * TWO_PI) * 0.5 + 0.5;
-    noiseDetail(1, 80 * tdelta);
+    const tdelta = Math.cos(frameCount * 0.01 * TWO_PI) * 0.25 + 0.5; // [0.25,0.50]
+    noiseDetail(2, tdelta * 100.0);
 
     for (let y = 0; y < rows; y++)
     {
@@ -134,7 +134,7 @@ function draw()
         particles[i].show();
     }
 
-    if (Math.random() * 10 > 5 && particles.length < 2500)
+    if (Math.random() > 0.5 && particles.length < 2500)
     {
         let rnd = Math.floor(noise(zoff) * 20);
 
@@ -152,4 +152,9 @@ function draw()
             particles.shift();
         }
     }
+}
+
+function windowResized()
+{
+    resizeCanvas(windowWidth, windowHeight);
 }
