@@ -25,9 +25,9 @@ function setup()
 
     createCanvas(windowWidth, windowHeight);
     pixelDensity(1);
-    background(245);
-    frameRate(25);
-    blendMode(OVERLAY);
+    background(250);
+    frameRate(250);
+    blendMode(SOFT_LIGHT);
 
     cols = floor(width / scl);
     rows = floor(height / scl);
@@ -97,7 +97,7 @@ function Particle()
 
 function draw()
 {
-    background(color(245, 245, 245, 3));
+    background(color(250, 250, 250, 3));
 
     let yoff = start;
 
