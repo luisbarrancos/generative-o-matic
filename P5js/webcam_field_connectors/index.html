@@ -1,17 +1,34 @@
-<!-- This is a static file -->
-<!-- served from your routes in server.js -->
-
 <!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
-  <head>
-    <title>P5js webcam/audio reactive flow field agents</title>
-    <meta name="description" content="p5.js webcam flowfield">
-    <script src="libraries/p5.js"></script> 
-    <script src="libraries/p5.sound.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.js"></script>
-  </head>
-  <body>
-    <div id="canvas"</div>
-    <script src="sketch.js"></script>
-  </body>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Flow Lock</title>
+        <meta name="description" content="Flow Lock">
+        <meta name="keywords" content="Processing,P5js,Procedural,Generative">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- OG/OpenGraph-->
+        <meta property="og:locale" content="en_US">
+        <meta property="og:type" content="generative art sketch">
+        <meta property="og:title" content="Flow Lock I">
+        <meta property="og:description" content="Flow Lock I">
+        <meta name=”robots” content=”index,follow,max-snippet:-1,max-image-preview:standard,max-video-preview:-1,noimageindex″>
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <!-- p5js here -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js" referrerpolicy="no-referrer"></script>
+        <script src="https://get.cdnpkg.com/p5.js/0.4.8/p5.sound-min.js" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js" referrerpolicy="no-referrer"></script>
+    </head>
+    <body itemscope itemtype="https://www.schema.org/WebApplication">
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <div id="p5js-container" class="p5js-sketch-container">
+            <script itemprop="applicationCategory" content="Multimedia" src="sketch.js" async defer></script>
+        </div>
+    </body>
 </html>
