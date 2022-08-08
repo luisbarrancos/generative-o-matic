@@ -2,16 +2,15 @@
 
 let kMax;
 let step;
-const n         = 80;   // number of blobs
-const radius    = 0.15; // diameter of the circle
-const inter     = 0.15; // difference between the sizes of two blobs
+const n         = 80;  // number of blobs
+const radius    = 0.5; // diameter of the circle
+const inter     = 0.5; // difference between the sizes of two blobs
 const maxNoise  = 1000;
 const angleStep = Math.PI / 8;
 
-
-const screen_width = 1024
+const screen_width  = 1024
 const screen_height = 1024;
-const numsteps = 40;
+const numsteps      = 40;
 
 let xstep, ystep;
 let half_width, half_height;
@@ -23,38 +22,32 @@ const colors =
 
 function setup()
 {
-    createCanvas(screen_width, screen_height);//, WEBGL);
-    //colorMode(HSB, 1);
+    createCanvas(screen_width, screen_height); //, WEBGL);
     angleMode(RADIANS);
     noFill();
-    //noStroke();
-    // noLoop();
     stroke(120, 200, 200);
     background(0);
     frameRate(25);
     pixelDensity(0.25); // lower than 1 pixel density = blur
 
-    xstep = screen_width % numsteps;
-    ystep = screen_height % numsteps;
-    half_width = screen_width / 2;
+    xstep       = screen_width % numsteps;
+    ystep       = screen_height % numsteps;
+    half_width  = screen_width / 2;
     half_height = screen_height / 2;
 
-    half_width = 0;
+    half_width  = 0;
     half_height = 0;
 
-    //blendMode(ADD);
+    // blendMode(ADD);
 }
 
 function hexToRgb(hex)
 {
-    hex = hex.replace('#', '');
-
+    hex        = hex.replace('#', '');
     var bigint = parseInt(hex, 16);
-
-    var r = (bigint >> 16) & 255;
-    var g = (bigint >> 8) & 255;
-    var b = bigint & 255;
-
+    var r      = (bigint >> 16) & 255;
+    var g      = (bigint >> 8) & 255;
+    var b      = bigint & 255;
     return color(r, g, b);
 }
 
@@ -64,49 +57,32 @@ function draw()
     const t = frameCount * 0.1;
     const m = millis() * 0.001;
 
-    noiseDetail(1, 0.873);
+    noiseDetail(2, 0.873);
 
-    beginShape(QUADS);
     for (let x = 0; x < screen_width; x += xstep)
     {
         let lastx = x;
 
         for (let y = 0; y < screen_height; y += ystep)
         {
-            const bx = noise(x + t, y + t) * 100;
-            const by = noise(x + m, y + m) * 100;
-            const nx = Math.cos(bx) * 50 + xstep / 2;
-            const ny = Math.sin(by) * 50 + ystep / 2;
+            const bx = noise(x + t, y + t) * 2 - 1;
+            const by = noise(x + m, y + m) * 2 - 1;
+            const nx = bx * 100;
+            const ny = by * 100;
 
             let c = hexToRgb(colors[y % colors.length]);
-            //console.log("color c " + c);
             c.setAlpha(100);
             stroke(c);
 
             const xx = x - half_width + nx;
             const yy = y - half_height + ny;
 
-            //curveVertex(x, y);
-            curveVertex(xx, yy);
-            //curveVertex(lastx, yy);
-
-
-            //ellipse(x - half_width + nx, y - half_height + ny,
-            //        40 * noise(y + t + m, x + t + m));
+            ellipse(
+                xx - half_width + nx,
+                yy - half_height + ny,
+                100 * noise(yy + t + m, xx + t + m));
         }
     }
-    endShape();
-    /*
-    for (let i = n; i >= 0; i--)
-    {
-        fill(colors[i % colors.length]);
-
-        const size      = radius + i * inter;
-        const k         = kMax * sqrt(i / n);
-        const noisiness = maxNoise * noiseProg(i / n);
-        blob(size, 0, 0, k, t + i * step, noisiness);
-    }
-    */
 }
 
 function blob(size, xCenter, yCenter, k, t, noisiness)

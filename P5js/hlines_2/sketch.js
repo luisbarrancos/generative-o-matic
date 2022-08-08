@@ -8,10 +8,9 @@ const inter     = 0.15; // difference between the sizes of two blobs
 const maxNoise  = 1000;
 const angleStep = Math.PI / 8;
 
-
-const screen_width = 512;
+const screen_width  = 512;
 const screen_height = 512;
-const numsteps = 40;
+const numsteps      = 40;
 
 let xstep, ystep;
 let half_width, half_height;
@@ -23,25 +22,23 @@ const colors =
 
 function setup()
 {
-    createCanvas(screen_width, screen_height);//, WEBGL);
-    //colorMode(HSB, 1);
+    createCanvas(screen_width, screen_height); //, WEBGL);
+    // colorMode(HSB, 1);
     angleMode(RADIANS);
     noFill();
-    //noStroke();
-    // noLoop();
     stroke(120, 200, 200);
     background(0);
     frameRate(25);
 
-    xstep = screen_width % numsteps;
-    ystep = screen_height % numsteps;
-    half_width = screen_width / 2;
+    xstep       = screen_width % numsteps;
+    ystep       = screen_height % numsteps;
+    half_width  = screen_width / 2;
     half_height = screen_height / 2;
 
-    half_width = 0;
+    half_width  = 0;
     half_height = 0;
 
-    //blendMode(ADD);
+    // blendMode(ADD);
 }
 
 function hexToRgb(hex)
@@ -65,7 +62,6 @@ function draw()
 
     noiseDetail(1, 0.873);
 
-    beginShape(QUADS);
     for (let x = 0; x < screen_width; x += xstep)
     {
         let lastx = x;
@@ -78,34 +74,25 @@ function draw()
             const ny = Math.sin(by) * 50 + ystep / 2;
 
             let c = hexToRgb(colors[y % colors.length]);
-            //console.log("color c " + c);
             c.setAlpha(100);
             stroke(c);
+            //strokeWeight(noise(x+y));
+            //c = hexToRgb(colors[(y * x) % colors.length]);
+            //c.setAlpha(50);
+            //fill(c);
 
             const xx = x - half_width + nx;
             const yy = y - half_height + ny;
+            //curveVertex(xx, yy); for beginShape(QUADS) as alt. to ellipse
 
-            //curveVertex(x, y);
-            curveVertex(xx, yy);
-            //curveVertex(lastx, yy);
-
-
-            //ellipse(x - half_width + nx, y - half_height + ny,
-            //        40 * noise(y + t + m, x + t + m));
+            ellipse(
+                x - half_width + nx,
+                y - half_height + ny,
+                40 * noise(y + t * m, x + t * m),
+                40 * noise(x + t / m, y + t / m),
+                );
         }
     }
-    endShape();
-    /*
-    for (let i = n; i >= 0; i--)
-    {
-        fill(colors[i % colors.length]);
-
-        const size      = radius + i * inter;
-        const k         = kMax * sqrt(i / n);
-        const noisiness = maxNoise * noiseProg(i / n);
-        blob(size, 0, 0, k, t + i * step, noisiness);
-    }
-    */
 }
 
 function blob(size, xCenter, yCenter, k, t, noisiness)

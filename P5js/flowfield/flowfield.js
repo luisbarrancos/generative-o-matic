@@ -23,11 +23,14 @@ function setup()
 {
     p5.disableFriendlyErrors = true;
 
-    createCanvas(windowWidth, windowHeight);
+    let canvas = createCanvas(windowWidth, windowHeight);
+    canvas.style("display", "block");
+    canvas.parent("p5js-container");
+
     pixelDensity(1);
     background(250);
     frameRate(250);
-    blendMode(SOFT_LIGHT);
+    blendMode(OVERLAY);
 
     cols = floor(width / scl);
     rows = floor(height / scl);
@@ -97,11 +100,12 @@ function Particle()
 
 function draw()
 {
-    background(color(250, 250, 250, 3));
+    background(color(250, 250, 250, 4));
 
     let yoff = start;
 
-    const tdelta = Math.cos(frameCount * 0.01 * TWO_PI) * 0.25 + 0.5; // [0.25,0.50]
+    const tdelta =
+        Math.cos(frameCount * 0.01 * TWO_PI) * 0.25 + 0.5; // [0.25,0.50]
     noiseDetail(2, tdelta * 10.0);
 
     for (let y = 0; y < rows; y++)

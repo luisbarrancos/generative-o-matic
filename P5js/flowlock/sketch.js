@@ -14,6 +14,7 @@ let flowfield;
 let magOff    = 0;
 let showField = false;
 
+// play with different colors
 const colors3 =
     "19324a,5f8fe8,5c7eed,001219,005f73,0a9396,94d2bd,e9d8a6,ee9b00,ca6702,bb3e03,ae2012,9b2226"
         .split(",")
@@ -136,7 +137,7 @@ function draw()
 
     for (let i = 0; i < particles.length; i++)
     {
-        stroke(colors[int(i / 50) % colors.length]);
+        stroke(colors3[int(i / 50) % colors3.length]);
 
         particles[i].follow(flowfield);
         particles[i].update();
