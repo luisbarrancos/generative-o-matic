@@ -43,8 +43,8 @@ let grey;
 
 const num_particles = 500;
 const frame_rate    = 25;
-const w = 640;
-const h = 480;
+const w             = 640;
+const h             = 480;
 
 // CCapture video
 // const capturer = new CCapture({format : "png", framerate : frame_rate});
@@ -62,7 +62,7 @@ function setup()
     colorMode(HSB);
 
     const ratio = w / h;
-    let canvas = createCanvas(w, h); // width and height available now
+    let canvas  = createCanvas(w, h); // width and height available now
     // fb = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
@@ -89,9 +89,9 @@ function setup()
     }
 
     // base number of steps, change acceleration. to aspect ratio
-    const step = 20;
-    x_step     = step;
-    y_step     = Math.floor(step * height / width);
+    const step  = 20;
+    x_step      = step;
+    y_step      = Math.floor(step * height / width);
     x_step_half = x_step / 2;
     y_step_half = y_step / 2;
 
@@ -183,8 +183,7 @@ function FlowField()
             //
             const v1 = createVector(
                 x_cell * Math.cos(lum * TWO_PI),
-                x_cell * Math.sin(lum * TWO_PI)
-                );
+                x_cell * Math.sin(lum * TWO_PI));
 
             // measure the angle between them in radians
             const vecDirect = v0.angleBetween(v1);
@@ -221,8 +220,8 @@ function FlowField()
             fill(grey);
             rotate(frameCount * 0.03);
 
-            const x_lum = x_step_half * lum;
-            const y_lum = y_step_half * lum;
+            const x_lum   = x_step_half * lum;
+            const y_lum   = y_step_half * lum;
             const dir_lum = lum * dir.mag();
 
             square(x_lum, y_lum, dir_lum * 5);
@@ -270,9 +269,11 @@ class Particle
 
     follow(vectors)
     {
-        const x = Math.floor(this.position.x / x_step); // init at randomized x cell
-        const y = Math.floor(this.position.y / y_step); // init at randomized y cell
-        const index = x + y * x_vec;               // linear 1d array indexing
+        const x =
+            Math.floor(this.position.x / x_step); // init at randomized x cell
+        const y =
+            Math.floor(this.position.y / y_step); // init at randomized y cell
+        const index = x + y * x_vec;              // linear 1d array indexing
         const force = vectors[index]; // access the force computed earlier
         this.applyForce(force);       // and apply it
     }
