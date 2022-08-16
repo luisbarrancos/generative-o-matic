@@ -22,9 +22,11 @@
 // Particles based on Daniel Shiffman instructional
 //
 
+"use strict";
+
 // steps should place more samples on Y or X if the aspect ratio != square
-let x_step;
-let y_step;
+let x_step, x_step_half;
+let y_step, y_step_half;
 let x_vec, y_vec;
 
 // for particle trails we need a second framebuffer object
@@ -41,12 +43,16 @@ let grey;
 
 const num_particles = 500;
 const frame_rate    = 25;
+const w = 640;
+const h = 480;
 
 // CCapture video
 // const capturer = new CCapture({format : "png", framerate : frame_rate});
 
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     orange = color("#ffa100");
     midblu = color("#0dade6");
     grey   = color("#575e59");
@@ -55,10 +61,8 @@ function setup()
     pixelDensity(1);
     colorMode(HSB);
 
-    const w = 640, h = 480;
     const ratio = w / h;
-
-    let canvas = createCanvas(w, h);
+    let canvas = createCanvas(w, h); // width and height available now
     // fb = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
@@ -67,8 +71,8 @@ function setup()
     // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getSupportedConstraints#Result
     const constraints = {
         video : {
-            width : {min : 640, ideal : min(w, 1280), max : 1280},
-            height : {min : 480, ideal : min(h, 720), max : 720},
+            width : {min : 640, ideal : min(width, 1280), max : 1280},
+            height : {min : 480, ideal : min(height, 720), max : 720},
             frameRate : {min : 25, ideal : 25, max : 60},
             aspectRatio : w / h,
         },
@@ -87,7 +91,9 @@ function setup()
     // base number of steps, change acceleration. to aspect ratio
     const step = 20;
     x_step     = step;
-    y_step     = floor(step * height / width);
+    y_step     = Math.floor(step * height / width);
+    x_step_half = x_step / 2;
+    y_step_half = y_step / 2;
 
     // divide the canvas into aspect compensated cells
     x_vec = floor(width / x_step);
@@ -176,7 +182,9 @@ function FlowField()
             // another for present time t_n
             //
             const v1 = createVector(
-                x_cell * cos(lum * TWO_PI), x_cell * sin(lum * TWO_PI));
+                x_cell * Math.cos(lum * TWO_PI),
+                x_cell * Math.sin(lum * TWO_PI)
+                );
 
             // measure the angle between them in radians
             const vecDirect = v0.angleBetween(v1);
@@ -212,13 +220,18 @@ function FlowField()
             noStroke();
             fill(grey);
             rotate(frameCount * 0.03);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 5);
+
+            const x_lum = x_step_half * lum;
+            const y_lum = y_step_half * lum;
+            const dir_lum = lum * dir.mag();
+
+            square(x_lum, y_lum, dir_lum * 5);
 
             // secondary rotating squares
             noFill()
             stroke(255);
             rotate(frameCount * 0.05);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 7);
+            square(x_lum, y_lum, dir_lum * 7);
 
             pop();
         }
@@ -231,8 +244,8 @@ class Particle
     constructor()
     {
         // initialize to a random position on the canvas
-        this.x              = random(width);
-        this.y              = random(height);
+        this.x              = Math.floor(Math.random() * width);
+        this.y              = Math.floor(Math.random() * height);
         this.position       = createVector(this.x, this.y);
         this.velocity       = createVector(0, 0); // dPdt
         this.acceleration   = createVector(0, 0); // dP^2/d^2t
@@ -257,8 +270,8 @@ class Particle
 
     follow(vectors)
     {
-        const x = floor(this.position.x / x_step); // init at randomized x cell
-        const y = floor(this.position.y / y_step); // init at randomized y cell
+        const x = Math.floor(this.position.x / x_step); // init at randomized x cell
+        const y = Math.floor(this.position.y / y_step); // init at randomized y cell
         const index = x + y * x_vec;               // linear 1d array indexing
         const force = vectors[index]; // access the force computed earlier
         this.applyForce(force);       // and apply it
