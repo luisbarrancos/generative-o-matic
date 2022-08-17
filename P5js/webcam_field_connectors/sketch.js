@@ -23,11 +23,10 @@
 //
 
 "use strict";
-p5.disableFriendlyErrors = true;
 
 // steps should place more samples on Y or X if the aspect ratio != square
-let x_step;
-let y_step;
+let x_step, x_step_half;
+let y_step, y_step_half;
 let x_vec, y_vec;
 
 // for particle trails we need a second framebuffer object
@@ -74,17 +73,19 @@ let reverb;
 //
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     // we'll be hearing the carrier
     modulator_amplitude = 100;
     modulator_frequency = 200;
 
-    carrier = new p5.Oscillator("sine");
+    carrier = new p5.Oscillator('sine');
     carrier.amp(0.1);
     carrier.freq(220); // carrier base frequency
     carrier.disconnect();
 
     // modulated by this modulator
-    modulator = new p5.Oscillator("sine");
+    modulator = new p5.Oscillator('sine');
     modulator.freq(modulator_frequency);
     modulator.amp(modulator_amplitude);
     modulator.disconnect();
@@ -112,7 +113,7 @@ function setup()
     pixelDensity(1); // don't change
     colorMode(HSB);
 
-    let canvas = createCanvas(w, h);
+    let canvas = createCanvas(w, h); // width, height available onwards
     // fb = createGraphics(w, h);
 
     // create a webcam with specific contraints and hide it
@@ -121,15 +122,15 @@ function setup()
     // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getSupportedConstraints#Result
     const constraints = {
         video : {
-            width : {min : 640, ideal : min(w, 1280), max : 1280},
-            height : {min : 480, ideal : min(h, 720), max : 720},
+            width : {min : 640, ideal : min(width, 1280), max : 1280},
+            height : {min : 480, ideal : min(height, 720), max : 720},
             frameRate : {min : 25, ideal : 25, max : 60},
-            aspectRatio : w / h,
+            aspectRatio : width / height,
         },
         audio : false
     };
     cam = createCapture(constraints);
-    cam.size(width, height);
+    cam.size(constraints["video"]["width"], constraints["video"]["height"]);
     cam.hide();
 
     // allocate storage for N particles
@@ -139,13 +140,15 @@ function setup()
     }
 
     // base number of steps, change acceleration. to aspect ratio
-    const step = 20;
-    x_step     = step;
-    y_step     = floor(step * height / width);
+    const steps = 20;
+    x_step     = steps;
+    y_step     = Math.floor(steps * height / width);
+    x_step_half = x_step / 2.0;
+    y_step_half = y_step / 2.0;
 
     // divide the canvas into aspect compensated cells
-    x_vec = floor(width / x_step);
-    y_vec = floor(height / y_step);
+    x_vec = Math.floor(width / x_step);
+    y_vec = Math.floor(height / y_step);
 
     background(midblu);
 
@@ -257,7 +260,12 @@ function FlowField()
             // another for present time t_n
             //
             // xcell * cos(2PI xi), xcell * sin(2PI xi)
-            const v1 = createVector(cos(lum * TWO_PI), sin(lum * TWO_PI));
+            /* equiv to Vector.fromAngle(lum * TWO_PI) which is faster
+            const v1 = createVector(
+                Math.cos(lum * TWO_PI),
+                Math.sin(lum * TWO_PI));
+            */
+            const v1 = p5.Vector.fromAngle(lum * TWO_PI);
 
             // measure the angle between them in radians
             const vecDirect = v0.angleBetween(v1);
@@ -268,7 +276,10 @@ function FlowField()
             // if it stabilizes with no input (static feed), randomize a bit
             if (dir.mag() < 0.1)
             {
-                dir.add(createVector(noise(x), noise(y)));
+                dir.add(createVector(
+                    Math.random() * x, /* noise(x) */
+                    Math.random() * y  /* noise(y) */
+                ));
             }
 
             // push the new vector into the array and set its magnitude
@@ -294,13 +305,17 @@ function FlowField()
             noStroke();
             fill(0, 0, 40, 0.4);
             rotate(frameCount * 0.03);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 5);
+            const xlum = lum * x_step_half;
+            const ylum = lum * y_step_half;
+            const maglum = lum * dir.mag();
+
+            square(xlum, ylum, maglum * 5);
 
             // secondary rotating squares
             noFill()
             stroke(0, 0, 255, 0.6);
             rotate(frameCount * 0.05);
-            square(lum * x_step / 2, lum * y_step / 2, lum * dir.mag() * 7);
+            square(xlum, ylum, maglum * 7);
             pop();
         }
     }
@@ -317,8 +332,8 @@ class Particle
     constructor()
     {
         // initialize to a random position on the canvas
-        this.x              = random(width);
-        this.y              = random(height);
+        this.x              = Math.random() * width;
+        this.y              = Math.random() * height;
         this.position       = createVector(this.x, this.y);
         this.velocity       = createVector(0, 0); // dPdt
         this.acceleration   = createVector(0, 0); // dP^2/d^2t
@@ -343,8 +358,8 @@ class Particle
 
     follow(vectors)
     {
-        const x = floor(this.position.x / x_step); // init at randomized x cell
-        const y = floor(this.position.y / y_step); // init at randomized y cell
+        const x = Math.floor(this.position.x / x_step); // init at randomized x cell
+        const y = Math.floor(this.position.y / y_step); // init at randomized y cell
         const index = x + y * x_vec;               // linear 1d array indexing
         const force = vectors[index]; // access the force computed earlier
         this.applyForce(force);       // and apply it
@@ -454,8 +469,8 @@ class Particle
     agitate(level)
     {
         // this.max_speed = 20;
-        this.position.x += level * (random() * 2.0 - 1.0) * 10;
-        this.position.y += level * (random() * 2.0 - 1.0) * 10;
+        this.position.x += level * (Math.random() * 2.0 - 1.0) * 10;
+        this.position.y += level * (Math.random() * 2.0 - 1.0) * 10;
         this.velocity.mult(level * 10);
     }
 
@@ -489,3 +504,4 @@ function windowResized()
     resizeCanvas(windowWidth, windowHeight);
 }
 */
+

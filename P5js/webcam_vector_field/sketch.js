@@ -57,7 +57,7 @@ function setup()
     midblu = color("#0dade6");
     grey   = color("#575e59");
 
-    frameRate(frame_rate);
+    //frameRate(frame_rate);
     pixelDensity(1);
     colorMode(HSB);
 
@@ -100,6 +100,7 @@ function setup()
     y_vec = floor(height / y_step);
 
     background(midblu);
+
 }
 
 var start_millis; // counter for recording, undefined for null test
@@ -337,3 +338,4 @@ function windowResized()
     resizeCanvas(windowWidth, windowHeight);
 }
 */
+
