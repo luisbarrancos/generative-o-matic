@@ -27,14 +27,14 @@ function setup()
     background(0);
     frameRate(25);
 
-    xstep = screen_width % numsteps;
-    ystep = screen_height % numsteps;
+    xstep = width % numsteps;
+    ystep = height % numsteps;
     ystep *= 0.957;
-    half_width  = screen_width / 2;
-    half_height = screen_height / 2;
+    half_width  = width / 2;
+    half_height = height / 2;
 
-    sun_xcoord = screen_width - 130 * scaling;
-    sun_ycoord = screen_height - 180 * scaling;
+    sun_xcoord = width - 130 * scaling;
+    sun_ycoord = height - 180 * scaling;
 
     half_width  = 0;
     half_height = 0;
@@ -60,11 +60,11 @@ function draw()
 
     noiseDetail(1, 0.873);
 
-    for (let x = 0; x < screen_width; x += xstep)
+    for (let x = 0; x < width; x += xstep)
     {
         let lastx = x;
 
-        for (let y = 0; y < screen_height; y += ystep)
+        for (let y = 0; y < height; y += ystep)
         {
             const bx = noise(x + t, y + t) * 100 / scaling;
             const by = noise(x + m, y + m) * 100 / scaling;
@@ -77,8 +77,8 @@ function draw()
             noStroke();
             fill(c);
 
-            const xx = x - half_width + nx;
-            const yy = y - half_height + ny;
+            const xx = x + nx;
+            const yy = y + ny;
 
             let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
             c2.setAlpha(15);

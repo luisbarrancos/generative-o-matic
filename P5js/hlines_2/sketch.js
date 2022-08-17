@@ -11,6 +11,7 @@ const angleStep = Math.PI / 8;
 const screen_width  = 512;
 const screen_height = 512;
 const numsteps      = 40;
+let resized_height_ratio = 1.0;
 
 let xstep, ystep;
 let half_width, half_height;
@@ -30,10 +31,10 @@ function setup()
     background(0);
     frameRate(25);
 
-    xstep       = screen_width % numsteps;
-    ystep       = screen_height % numsteps;
-    half_width  = screen_width / 2;
-    half_height = screen_height / 2;
+    xstep       = width % numsteps;
+    ystep       = height % numsteps;
+    half_width  = width / 2;
+    half_height = height / 2;
 
     half_width  = 0;
     half_height = 0;
@@ -62,32 +63,28 @@ function draw()
 
     noiseDetail(1, 0.873);
 
-    for (let x = 0; x < screen_width; x += xstep)
+    for (let x = 0; x < width; x += xstep)
     {
         let lastx = x;
 
-        for (let y = 0; y < screen_height; y += ystep)
+        for (let y = 0; y < height; y += ystep)
         {
             const bx = noise(x + t, y + t) * 100;
             const by = noise(x + m, y + m) * 100;
             const nx = Math.cos(bx) * 50 + xstep / 2;
             const ny = Math.sin(by) * 50 + ystep / 2;
 
-            let c = hexToRgb(colors[y % colors.length]);
+            let c = hexToRgb(
+                colors[Math.floor(y * screen_height / (height * colors.length))]);
             c.setAlpha(100);
             stroke(c);
-            //strokeWeight(noise(x+y));
-            //c = hexToRgb(colors[(y * x) % colors.length]);
-            //c.setAlpha(50);
-            //fill(c);
 
-            const xx = x - half_width + nx;
-            const yy = y - half_height + ny;
-            //curveVertex(xx, yy); for beginShape(QUADS) as alt. to ellipse
+            const xx = x + nx;
+            const yy = y + ny;
 
             ellipse(
-                x - half_width + nx,
-                y - half_height + ny,
+                x + nx,
+                y + ny,
                 40 * noise(y + t * m, x + t * m),
                 40 * noise(x + t / m, y + t / m),
                 );
@@ -115,6 +112,7 @@ function blob(size, xCenter, yCenter, k, t, noisiness)
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
+    resized_height_ratio = screen_height / height;
 }
 
 function keyPressed()

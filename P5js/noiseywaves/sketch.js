@@ -89,6 +89,8 @@ function blob(size, xCenter, yCenter, k, t, noisiness)
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);
+    center[0] = width / 2;
+    center[1] = height / 2;
 }
 
 function keyPressed()

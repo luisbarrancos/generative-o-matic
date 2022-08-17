@@ -33,10 +33,10 @@ function setup()
     background(0);
     frameRate(25);
 
-    xstep = screen_width % numsteps;
-    ystep = screen_height % numsteps;
-    half_width = screen_width / 2;
-    half_height = screen_height / 2;
+    xstep = width % numsteps;
+    ystep = height % numsteps;
+    half_width = width / 2;
+    half_height = height / 2;
 
     half_width = 0;
     half_height = 0;
@@ -66,19 +66,19 @@ function draw()
     noiseDetail(1, 0.873);
 
     beginShape(LINES);
-    for (let x = 0; x < screen_width; x += xstep)
+    for (let x = 0; x < width; x += xstep)
     {
         let lastx = x;
 
-        for (let y = 0; y < screen_height; y += ystep)
+        for (let y = 0; y < height; y += ystep)
         {
             const bx = noise(x + t, y + t) * 100;
             const by = noise(x + m, y + m) * 100;
             const nx = Math.cos(bx) * 50 + xstep / 2;
             const ny = Math.sin(by) * 50 + ystep / 2;
 
-            let c = hexToRgb(colors[y % colors.length]);
-            //console.log("color c " + c);
+            let c = hexToRgb(
+                colors[Math.floor(y * screen_height / (height * colors.length))]);            //console.log("color c " + c);
             c.setAlpha(100);
             stroke(c);
 
@@ -88,24 +88,9 @@ function draw()
             //curveVertex(x, y);
             curveVertex(xx, yy);
             curveVertex(lastx, yy);
-
-
-            //ellipse(x - half_width + nx, y - half_height + ny,
-            //        40 * noise(y + t + m, x + t + m));
         }
     }
     endShape();
-    /*
-    for (let i = n; i >= 0; i--)
-    {
-        fill(colors[i % colors.length]);
-
-        const size      = radius + i * inter;
-        const k         = kMax * sqrt(i / n);
-        const noisiness = maxNoise * noiseProg(i / n);
-        blob(size, 0, 0, k, t + i * step, noisiness);
-    }
-    */
 }
 
 function blob(size, xCenter, yCenter, k, t, noisiness)
