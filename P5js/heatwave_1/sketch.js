@@ -105,11 +105,16 @@ function draw()
     }
 }
 
+function windowResized()
+{
+    resizeCanvas(windowWidth, windowHeight);
+}
+
 function keyPressed()
 {
-    // Pressing the "q" key to
+    // Pressing the "s" key to
     // save the image
-    if (key === "q")
+    if (key === "s")
     {
         save(`frame_${frameCount}.png`);
     }

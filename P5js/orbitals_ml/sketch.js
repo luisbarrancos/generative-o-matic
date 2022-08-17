@@ -483,3 +483,18 @@ function mousePressed()
         sound_playing = true;
     }
 }
+
+function windowResized()
+{
+    resizeCanvas(windowWidth, windowHeight);
+}
+
+function keyPressed()
+{
+    // Pressing the "s" key to
+    // save the image
+    if (key === "s")
+    {
+        save(`frame_${frameCount}.png`);
+    }
+}
