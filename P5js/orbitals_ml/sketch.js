@@ -27,7 +27,7 @@ let rotate_y = false;
 let rotate_z = false;
 const steps  = 4; // do don't go above 4, you were warned.
 
-// Math.pow is slower, and Math.hypot is incredbly slow
+// Math.pow is slower, and Math.hypot is incredibly slow
 const square = x => x * x;
 // sum and multiply 2 arrays element by element
 const sum = (a, b) => a.map((c, i) => c + b[i]);
@@ -54,11 +54,7 @@ let palette = 0;
 let font    = null;
 let pts     = []
 
-    // Sound
-    let sound_track1,
-    sound_track2;
-let play_soundtrack = false; // true
-//
+// sound stuff
 let carrier, modulator, reverb;
 let freq, ampl;
 let oscillator_playing = false;
@@ -77,9 +73,6 @@ function preload()
     classifier = ml5.soundClassifier(sound_model + "model.json", ml_options);
     // load font for contextual help
     font = loadFont("assets/_decterm.ttf");
-    // and a soundtrack
-    sound_track1 = loadSound("assets/Minecraft.mp3");
-    sound_track2 = loadSound("assets/Estica_Paulo.mp3");
 }
 
 function init_object()
@@ -150,27 +143,19 @@ function sonorize(radius, distance)
 function setup()
 {
     p5.disableFriendlyErrors = true;
-    // 854x480, 640x360, 1280x720
-    createCanvas(width = screen_width, height = screen_height, WEBGL);
+    createCanvas(screen_width, screen_height, WEBGL);
     frameRate(frame_rate);
     background(0);
+
     // Start classifying
     // The sound model will continuously listen to the microphone
     classifier.classify(got_result);
+
     // initialize the shapes array
     init_object();
 
-    if (play_soundtrack == true)
-    {
-        // start looping the soundtrack
-        sound_track1.loop();
-        sound_track1.setVolume(0.5);
-    }
-    else
-    {
-        // or initialize the FM synthesis
-        sound_setup();
-    }
+    // or initialize the FM synthesis
+    sound_setup();
 }
 
 function setup_text()
@@ -248,66 +233,45 @@ function label_actions(a)
     {
         palette = 4;
         a.bigger();
-        if (play_soundtrack == false)
-        {
-            ampl = constrain(ampl + 0.05, 0, max_amplitude);
-            modulator.amp(ampl, smoothing_period);
-        }
+        ampl = constrain(ampl + 0.05, 0, max_amplitude);
+        modulator.amp(ampl, smoothing_period);
     }
     if (label === "Smaller")
     {
         palette = 5;
         a.smaller();
-        if (play_soundtrack == false)
-        {
-            ampl = constrain(ampl - 0.05, 0, max_amplitude);
-            modulator.amp(ampl, smoothing_period);
-        }
+        ampl = constrain(ampl - 0.05, 0, max_amplitude);
+        modulator.amp(ampl, smoothing_period);
     }
     if (label === "Faster")
     {
         palette = 6;
         a.faster();
-        if (play_soundtrack == false)
-        {
-            freq = constrain(freq + 10, min_freq, max_freq);
-            modulator.freq(freq, smoothing_period);
-        }
+        freq = constrain(freq + 10, min_freq, max_freq);
+        modulator.freq(freq, smoothing_period);
     }
     if (label === "Slower")
     {
         palette = 7;
         a.slower();
-        if (play_soundtrack == false)
-        {
-            freq = constrain(freq - 10, min_freq, max_freq);
-            modulator.freq(freq, smoothing_period);
-        }
+        freq = constrain(freq - 10, min_freq, max_freq);
+        modulator.freq(freq, smoothing_period);
     }
     if (label === "Warmer")
     {
         palette = 9;
-        if (play_soundtrack == false)
-        {
-            carrier.setType("sine");
-        }
+        carrier.setType("sine");
     }
     if (label === "Colder")
     {
         palette = 10;
-        if (play_soundtrack == false)
-        {
-            carrier.setType("square");
-        }
+        carrier.setType("square");
     }
     if (label === "Stop")
     {
         a.stop();
-        if (play_soundtrack == false)
-        {
-            // carrier.stop();
-            // modulator.stop();
-        }
+        // carrier.stop();
+        // modulator.stop();
     }
 }
 
@@ -338,8 +302,10 @@ function rotate_screen(f)
     //
     if (rotate_x == true)
         rotateX(f / 23);
+
     if (rotate_y == true)
         rotateY(f / 47);
+
     if (rotate_z == true)
         rotateZ(f / 31);
 }
@@ -348,16 +314,11 @@ function draw()
 {
     const f = frameCount;
     rotate_screen(f);
+
     const tdelta   = TWO_PI * f * 0.1;
     const rotangle = tdelta * 0.000005;
 
-    if (play_soundtrack == true)
-    {
-        carrier.stop();
-        modulator.stop();
-        oscillator_playing = false;
-    }
-    else if (!oscillator_playing)
+    if (!oscillator_playing)
     {
         carrier.start();
         modulator.start();
@@ -389,37 +350,22 @@ function draw()
 
         stroke(Palette.colors(i, palette % Palette.palette_length, 50));
 
-        // well, avoid the inner loop, not neat, but solves it
-        if (play_soundtrack == true)
+        // sonorization
+        for (let j = i + 1; j < p.length; j++)
         {
-            for (let j = i + 1; j < p.length; j++)
+            const b = p[j];
+            const dd = square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
+            
+            if (dd < 1500)
             {
-                const b = p[j];
-                if (square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z)
-                    < 1500)
+                if (i % (frame_rate * 2) == 0)
                 {
-                    line(a.x, a.y, a.z, b.x, b.y, b.z);
+                    sonorize(1500, dd);
                 }
+                line(a.x, a.y, a.z, b.x, b.y, b.z);
             }
         }
-        else
-        {
-            // sonorization
-            for (let j = i + 1; j < p.length; j++)
-            {
-                const b = p[j];
-                const dd =
-                    square(a.x - b.x) + square(a.y - b.y) + square(a.z - b.z);
-                if (dd < 1500)
-                {
-                    if (i % (frame_rate * 2) == 0)
-                    {
-                        sonorize(1500, dd);
-                    }
-                    line(a.x, a.y, a.z, b.x, b.y, b.z);
-                }
-            }
-        }
+
         const costheta = a.amplitude * Math.cos(a.frequency * rotangle);
         const sintheta = a.amplitude * Math.sin(a.frequency * rotangle);
 
@@ -466,22 +412,7 @@ function draw()
 
 function mouseClicked()
 {
-    show_help       = true;
-    play_soundtrack = !play_soundtrack;
-}
-
-function mousePressed()
-{
-    if (sound_track1.isPlaying())
-    {
-        sound_track1.pause();
-        sound_playing = false;
-    }
-    else
-    {
-        sound_track1.play();
-        sound_playing = true;
-    }
+    show_help = true;
 }
 
 function windowResized()

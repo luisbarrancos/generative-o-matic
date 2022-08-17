@@ -1,51 +1,31 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Colored Orbitals ML</title>
-    <meta name="description" content="Colored Orbitals ML">
-    <link rel="stylesheet" href="style.css">
-    <!-- main libs -->
-    <script src="libraries/p5.js"></script> 
-    <script src="libraries/p5.sound.js"></script> 
-    <script src="libraries/ml5.min.js"></script> 
-    <script src="libraries/p5.func.js"></script>
-    <script src="libraries/p5.speech.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.js"></script>
-    <!-- sketch libs-->
-    <script src="palette.js"></script>
-    <script src="orbital_states.js"></script>
-    <script src="orbital_sentiment.js"></script>
-<!--Style-->
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;500&display=swap');
-  </style>
-
-</head>
-<body>
-<button class="question"  onclick="instructions()"><h1><b>?</b></h1></button>
-<div id="text">
-  <h2>Voice Commands:</h2>
-  <ul>
-    <li>X Rotate / Y Rotate / Z Rotate / Stop</li>
-    <li>Warmer / Colder</li>
-    <li>Faster / Slower</li>
-    <li>Bigger / Smaller</li>
-    <li>Wider / Closer</li>
-    <li style="border-right: solid white 1px;">Help / Hide</li>
-</ul>
-  </div>
-  <div id="canvas"></div>
-  <script src="sketch.js"></script>
-</div>
-
-<script>
-function instructions() {
-  var x = document.getElementById("text");
-  if (x.style.display === "none") {
-    x.style.display = "block";
-  } else {
-    x.style.display = "none";
-  }
-}
-</script>
-   
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Orbitals ML</title>
+        <meta name="description" content="Orbitals ML">
+        <meta name="keywords" content="Processing,P5js,Procedural,Generative">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- OG/OpenGraph-->
+        <meta property="og:locale" content="en_US">
+        <meta property="og:type" content="generative art sketch">
+        <meta property="og:title" content="Orbitals ML">
+        <meta property="og:description" content="Voice driven ML5 orbitals">
+        <meta name=”robots” content=”index,follow,max-snippet:-1,max-image-preview:standard,max-video-preview:-1,noimageindex″>
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <!-- p5js here -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/addons/p5.sound.min.js" referrerpolicy="no-referrer"></script>
+        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js" referrerpolicy="no-referrer"></script>
+        <!-- sketch libs-->
+        <script src="util/palette.js"></script>
+        <script src="util/orbital_states.js"></script>
+        <script src="util/orbital_sentiment.js"></script>
+    </head>
+    <body itemscope itemtype="https://www.schema.org/WebApplication">
+        <div id="p5js-container" class="p5js-sketch-container">
+            <script itemprop="applicationCategory" content="Multimedia" src="sketch.js" async defer></script>
+        </div>
+    </body>
+</html>
