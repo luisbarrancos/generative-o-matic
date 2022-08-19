@@ -1,3 +1,6 @@
+# Multiplayer fluids
+
+A sketch running a CFD simulation 
 # Running the sketch
 
 The sketch relies on [P5.multiplayer](https://github.com/L05/p5.multiplayer)
@@ -8,7 +11,7 @@ However, the entire structure is already in-place and ready to run.
 
 ## Running
 
-1. Go to the [multiplayer fluids directory](https://github.com/luisbarrancos/generative-o-matic/tree/master/P5js/multiplayer_fluids) and you should see the files ```server.js```, ```public/host.js``` and ```public/index.js```
+1. Go to the [multiplayer fluids directory](https://github.com/luisbarrancos/generative-o-matic/tree/master/P5js/multiplayer_fluids) and you should see the files ```server.js```, ```host.js``` and ```index.js```
 
 2. Edit them so that their ```serverIp``` entries are filled to your network setup, i.e, ```192.168.0.3``` and ```serverPort``` set to, for example, port 3000.
 

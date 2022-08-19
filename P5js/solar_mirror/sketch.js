@@ -1,3 +1,4 @@
+"use strict";
 
 const screen_width  = 1024;
 const screen_height = 1024;
@@ -20,6 +21,8 @@ const colors2 =
 
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     createCanvas(screen_width, screen_height); //, WEBGL);
     angleMode(RADIANS);
     noFill();
@@ -30,14 +33,9 @@ function setup()
     xstep = width % numsteps;
     ystep = height % numsteps;
     ystep *= 0.957;
-    half_width  = width / 2;
-    half_height = height / 2;
 
     sun_xcoord = width - 130 * scaling;
     sun_ycoord = height - 180 * scaling;
-
-    half_width  = 0;
-    half_height = 0;
 }
 
 function hexToRgb(hex)

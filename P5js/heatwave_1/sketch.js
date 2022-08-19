@@ -1,3 +1,4 @@
+"use strict";
 
 const screen_width  = 1024;
 const screen_height = 1024;
@@ -6,10 +7,8 @@ const numsteps      = 40 * scaling;
 const frame_rate    = 25;
 
 let xstep, ystep;
-let half_width, half_height;
 let sun_xcoord, sun_ycoord;
 let pg;
-let scaleOutput = 1;
 
 const colors =
     "264653,287271,2a9d8f,8ab17d,babb74,e9c46a,efb366,f4a261,ee8959,e76f51"
@@ -36,6 +35,8 @@ function hexToRgb(hex)
 
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     createCanvas(screen_width, screen_height); //, WEBGL);
     angleMode(RADIANS);
     background(0);
@@ -48,24 +49,12 @@ function setup()
     xstep = width % numsteps;
     ystep = height % numsteps;
     ystep *= 0.957;
-    half_width  = width / 2;
-    half_height = height / 2;
 
     sun_xcoord = width - 130 * scaling;
     sun_ycoord = height - 180 * scaling;
 
-    half_width  = 0;
-    half_height = 0;
-
     pg = createGraphics(4096, 4096);
     pg.background(0);
-}
-
-let img;
-
-function preload()
-{
-    // img = loadImage("sample-image.png");
 }
 
 function draw()
@@ -86,8 +75,8 @@ function draw()
             const by = noise(x + m, y + m) * 100 / scaling;
             const nx = Math.cos(bx) * 50 * scaling + xstep / 2;
             const ny = Math.sin(by) * 50 * scaling + ystep / 2;
-            const xx = x - half_width + nx;
-            const yy = y - half_height + ny;
+            const xx = x + nx;
+            const yy = y + ny;
 
             let c2 = hexToRgb(colors2[Math.ceil(Math.abs(y)) % colors2.length]);
             c2.setAlpha(15);

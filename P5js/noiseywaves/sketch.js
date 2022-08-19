@@ -1,4 +1,4 @@
-// Adapted from original by Roni Kaufman
+"use strict";
 
 let kMax;
 let step;
@@ -31,8 +31,9 @@ function noiseProg(x)
 
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     createCanvas(1280, 720, /* WEBGL */);
-    // colorMode(HSB, 1);
     angleMode(RADIANS);
     noFill();
     noStroke();

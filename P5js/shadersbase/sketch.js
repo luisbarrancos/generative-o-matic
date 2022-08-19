@@ -14,6 +14,8 @@ function preload()
 
 function setup()
 {
+    p5.disableFriendlyErrors = true;
+
     createCanvas(w, h, WEBGL);
     frameRate(maxfps);
     noStroke();
