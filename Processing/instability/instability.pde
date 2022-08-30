@@ -75,7 +75,7 @@ class Particle
         this.vel.add(this.acc);
         this.vel.limit(this.maxSpeed);
         this.pos.add(this.vel);
-        this.acc.mult(0.0); // toggle
+        this.acc.mult(0.9); // toggle or scale
         /*
         this.acc.set(
           max(0.0, this.acc.x - this.decay.x),
