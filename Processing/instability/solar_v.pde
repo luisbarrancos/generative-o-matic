@@ -1,5 +1,4 @@
 
-
 float inc      = 2.1; // 10.1
 float incStart = 0.005;
 float magInc   = 0.0005;
@@ -16,18 +15,27 @@ boolean showField = true;
 
 int numParticles = 1000; // 12500;
 Particle[] particles;
-//ArrayList<Particle> particles;
 PVector[] flowfield;
 
-int alpha = 255;
+int alpha = 15;
+
+color[] palette2 =
+{
+    color(220, 47, 2, alpha),
+    color(232, 93, 4, alpha),
+    color(244, 140, 6, alpha),
+    color(250, 163, 7, alpha),
+    color(255, 186, 8, alpha),
+    color(208, 0, 0, alpha),
+    color(157, 2, 8, alpha),
+    color(106, 4, 15, alpha),
+    color(55, 6, 23, alpha),
+    color(3, 7, 30, alpha),
+};
 
 color[] palette =
 {
-  color(234, 226, 183, alpha),
-  color(252, 191, 73, alpha),
-  color(247, 127, 0, alpha),
-  color(214, 40, 40, alpha),
-  color(0, 48, 73, alpha),
+#001219, #005f73, #0a9396, #94d2bd, #e9d8a6, #ee9b00, #ca6702, #bb3e03, #ae2012, #9b2226
 };
 
 PGraphics pg;
@@ -44,7 +52,7 @@ void setup()
     
     background(0, 0.1);
     strokeWeight(1.0);
-    stroke(255, 0, 0);
+    stroke(255, 255, 255);
     
     particles = new Particle[numParticles];
     for (int i = 0; i < particles.length; i++)
@@ -57,22 +65,6 @@ void setup()
     {
         flowfield[i] = new PVector(0, 0);
     }
-}
-
-float[] cartesian2polar(float x, float y)
-{
-    float r = sqrt(x*x + y*y);
-    float theta = atan2(y, x);
-    float[] out = {r, theta};
-    return out;
-}
-
-float[] polar2cartesian(float r, float theta)
-{
-    float x = r * cos(theta);
-    float y = r * sin(theta);
-    float out[] = {x, y};
-    return out;
 }
 
 class Particle
@@ -88,7 +80,7 @@ class Particle
         this.prevPos = this.pos.copy();
         this.vel = new PVector(0.0, 0.0);
         this.acc = new PVector(0.0, 0.0);
-        this.pcolor = color(palette[(int) random(0, palette.length)]);
+        this.pcolor = color(255); //color(palette[(int) random(0, palette.length)]);
         this.decay = new PVector(random(1.0), random(1.0));
     }
     
@@ -98,7 +90,7 @@ class Particle
         this.prevPos = this.pos.copy();
         this.vel = new PVector(0.0, 0.0);
         this.acc = new PVector(0.0, 0.0);
-        this.pcolor = color(palette[(int) random(0, palette.length)]);
+        this.pcolor = color(255);//color(palette[(int) random(0, palette.length)]);
         this.decay = new PVector(random(1.0), random(1.0));
     }
         
@@ -168,7 +160,7 @@ class Particle
         this.applyForce(force);
     }
     
-    void check(Particle[] particles)
+    void check(Particle[] particles, float dist)
     {
         for (Particle particle : particles)
         {
@@ -177,13 +169,16 @@ class Particle
             {
                 this.applyForce(n.mult(-10));
             }
-            if (n.mag() < frameCount % 200 /* 125 */)
+            if (n.mag() < frameCount % floor(dist) /* 200 */ /* 125 */)
             {
-                //this.applyForce(n.mult(-10));
                 PVector r = PVector.random2D();
                 this.applyForce(n.add(r.mult(100)));
-                int ndx = (int) floor(map(n.mag(), 0, 25, 0, palette.length-1));
-                this.pcolor = palette[ndx % palette.length];
+                //int ndx = (int) floor(map(n.mag(), 0, 25, 0, palette.length-1));
+                // int ndx = floor(map(n.mag(), 0, 200, 0, palette.length - 1));
+                //color c = palette[ndx % palette.length];
+                // ndx = floor(map(n.mag(), 0, 800 /*sqrt(w**2+h**2) */, 0, palette.length - 1));
+                //this.pcolor = palette[ndx];
+                this.pcolor = lerpColor(#ffbf00, #ce0041, n.mag() / (floor(dist) + 1));
             }
         }
     }
@@ -197,7 +192,7 @@ void draw()
     //pg.tint(0, 4);
 
     int yoff = start;
-    float tdelta = frameCount / (cos(frameCount * 0.01 * TWO_PI) * 0.5 + 0.5);
+    float dist = dist(mouseX, mouseY, floor(width / 2.0), floor(height / 2.0));
 
     //noiseDetail(2, tdelta * 0.25 + 0.05);
     for (int y = 0; y < rows; y++)
@@ -206,14 +201,12 @@ void draw()
 
         for (int x = 0; x < cols; x++)
         {   
-            //noiseSeed((x + frameCount) * y);
             //noiseDetail(2, tdelta * 0.25 + 0.05);
             //noiseDetail(ceil((x + 1) / 8.0), x / (y + 1));
             int index = x + y * cols;
             float angle = noise(xoff, yoff, zoff) * TWO_PI;
             PVector v = PVector.fromAngle(angle);
             float m = map(noise(xoff, yoff, magOff), 0, 1, -5, 5);
-            
             v.setMag(m);
             flowfield[index] = v; // replace v by other flow field as needed rather than noise()
             
@@ -229,7 +222,7 @@ void draw()
     {
         pg.stroke(particle.pcolor);
         particle.follow(flowfield);
-        particle.check(particles);
+        particle.check(particles, dist);
         particle.update();
         particle.edges();
         particle.show();
@@ -258,7 +251,8 @@ void draw()
     
     pg.endDraw();
     image(pg, 0, 0);
-    
-
 }
+
+
+
 
