@@ -8,7 +8,8 @@ let leshader = null;
 function preload()
 {
     leshader = loadShader(
-        "assets/shader.vert", "assets/shader.frag",
+        "assets/shader.vert", 
+        "assets/shader.frag",
         );
 }
 
