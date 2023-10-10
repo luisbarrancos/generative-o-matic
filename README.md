@@ -2,6 +2,8 @@
 
 Assortment of [P5js](https://p5js.org/), [Processing](https://processing.org/) and [OpenFrameWorks](https://openframeworks.cc/download/) sketches.
 
+![Instability I Sketch](/screenshots/instability.png?raw=true)
+
 ## What is it then?
 
 Some generative art sketches and simulations involving computer vision, optical flow, particles, vector fields, voice recognition via [Google's TeachableAI](https://teachablemachine.withgoogle.com/) and [ML5js](https://ml5js.org/), feature tracking and sentiment analysis via [CLMTrackr](https://github.com/auduno/clmtrackr).
