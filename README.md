@@ -17,6 +17,18 @@ There's nothing suspicious about such access, but the sketches are small so even
 Some sketches require running a [NodeJS](https://nodejs.org/en/) server though.
 [This sketch in particular](https://github.com/luisbarrancos/generative-o-matic/tree/master/P5js/multiplayer_fluids), which relies on [P5.multiplayer](https://github.com/L05/p5.multiplayer) in order to have multiple users interacting via a QR scanned UI/interface sketch in their mobile devices with a host sketch.
 
+
+### Processing/Java
+
+ - Instability I: biological like simulation, particle growth with dendrites, reacting to mouse input, but with action of their own.
+ - Instability II: Particle agents move through a flow field, are attracted to nearby particles, but not too much, and occasionally eat the neighbours. Now with a grid optimization for the nearest neighbour.
+ - Instability III: Particle trails along a flow field.
+ - Instability IV: Particle trails, showing some dendritical like exploration, until they converge and stabilize.
+ - Solar I: Radial growth and boiling like motion, reminiscent of the Sun's photosphere.
+ - Solar II: Variation of Instability I without the mouse input.
+ - Solar III: Faster more fluid version of Instability I, with faster cycle and different palette generation.
+ - Solar IV: Particle radial growth, stabilization, reacting with mouse input. More visually stable than the other variants and with a different palette cycle.
+
 ### P5js sketches
 
  - Blur: defocused overlaying circles with a pseudo-random color gradient

@@ -63,7 +63,9 @@ void setup()
     // Create particle trails palette, which MUST be done before constructing
     // particles.
     Palette trailColors = new Palette(64);
-    trailColors.createTriadicPalette(color(255, 153, 0), 0.2, 0.4, 0.8);
+    // hue, saturation, brightness offsets are relative to the [0,360] and
+    // [0,100] ranges for hue and saturation and brightness respectively.
+    trailColors.createTriadicPalette(color(255, 153, 0), 30, 60, 40);
     palette = trailColors.getPalette();
 
     particles = new ArrayList<Particle>();
