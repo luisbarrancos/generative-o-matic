@@ -4,16 +4,16 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 // Controls fdr the Perlin noise field
-float noiseDensity      = 5.0;
+float noiseDensity = 5.0;
 float noiseIncrement = 0.05;
-int noiseOffset    = 0;
+int noiseOffset = 0;
 int noiseTimeOffset = 0;
 
 // Beware of the flow field cell size, since smaller values
 // result in more dense and computationally expensive flow fields
-int fieldCellSize      = 12;
-float fieldMagnitude   = 0.005;
-float fieldMagnitudeOffset    = 0;
+int fieldCellSize = 12;
+float fieldMagnitude = 0.005;
+float fieldMagnitudeOffset = 0;
 
 // Particle related variables
 int numParticles = 1500; // 12500;
@@ -51,6 +51,22 @@ PVector[] flowfield;
 PGraphics canvas;
 
 
+// WIP: XOR-Shift RNG for int and float values, timings needed
+long seed;
+long xorShiftRandom()
+{
+    seed ^= (seed << 21);
+    seed ^= (seed >>> 35);
+    seed ^= (seed << 4);
+    return seed;
+}
+
+// Generate random float between 0.0 (inclusive) and 1.0 (exclusive)
+float xorShiftRandomFloat()
+{
+    return (xorShiftRandom() & 0x7FFFFFFF) / (float) 0x7FFFFFFF;
+}
+
 void setup()
 {
     size(640, 480, P2D);
@@ -60,6 +76,20 @@ void setup()
     fieldColumns = (int) floor(width / fieldCellSize);
     fieldRows = (int) floor(height / fieldCellSize);
     
+    // WIP: timings for XOR-shift RNG
+    seed = System.currentTimeMillis();  // Seed with the current time
+    for (int i = 0; i < 10; i++)
+    {
+        long randomValue = xorShiftRandom();
+        text("Random Integer: " + randomValue, 50, 50 + i * 30);
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        float randomValue = xorShiftRandomFloat();
+        text("Random Float: " + randomValue, 200, 50 + i * 30);
+    }
+
     // Create particle trails palette, which MUST be done before constructing
     // particles.
     Palette trailColors = new Palette(64);
@@ -69,12 +99,14 @@ void setup()
     palette = trailColors.getPalette();
 
     particles = new ArrayList<Particle>();
-    for (int i = 0; i < numParticles; i++) {
+    for (int i = 0; i < numParticles; i++)
+    {
         particles.add(new Particle());
     }
 
     flowfield = new PVector[fieldRows * fieldColumns];
-    for (int i = 0; i < flowfield.length; i++) {
+    for (int i = 0; i < flowfield.length; i++)
+    {
         flowfield[i] = new PVector(0, 0);
     }
     
@@ -83,15 +115,15 @@ void setup()
     //canvas.blendMode(BLEND);
     //canvas.strokeWeight(1.0);
 
-
-
     // Initialize the optimization grid
     grid = new Grid(fieldColumns, fieldRows, gridSize);
     
     // Precompute noise values
     float[] noiseValues = new float[fieldColumns * fieldRows];
-    for (int y = 0; y < fieldRows; y++) {
-        for (int x = 0; x < fieldColumns; x++) {
+    for (int y = 0; y < fieldRows; y++)
+    {
+        for (int x = 0; x < fieldColumns; x++)
+        {
             noiseValues[x + y * fieldColumns] = noise(x * noiseDensity, y * noiseDensity, noiseTimeOffset);
         }
     }
@@ -104,11 +136,13 @@ void draw()
     canvas.background(0, 0, 0, 10);
     
     int yoff = noiseOffset;
-    for (int y = 0; y < fieldRows; y++) {
+    for (int y = 0; y < fieldRows; y++)
+    {
         int xoff = noiseOffset;
-        for (int x = 0; x < fieldColumns; x++) {
+        for (int x = 0; x < fieldColumns; x++)
+        {
             int index = x + y * fieldColumns;
-            noiseDetail(2, 2);
+            //noiseDetail(2, 2); // expensive, not really worth it here
             float angle = noise(xoff, yoff, noiseTimeOffset) * TWO_PI;
             PVector v = PVector.fromAngle(angle);
             v.setMag(5);
@@ -122,9 +156,11 @@ void draw()
     noiseTimeOffset += noiseIncrement;
     noiseOffset -= fieldMagnitude;
     
-    // Separate logic for attraction and repulsion
+    // for (P p : ps) is throwing an error
+    // TODO: just syntactical sugar but i would like to know more.
     Iterator<Particle> iterator = particles.iterator();
-    while(iterator.hasNext()) {
+    while(iterator.hasNext())
+    {
         Particle particle = iterator.next();
         stroke(particle.particleColor);
         
@@ -143,54 +179,54 @@ void draw()
         grid.insert(particle);
     }
     
-    // Lists for new particles and particles to remove
     ArrayList<Particle> newParticles = new ArrayList<Particle>();
     ArrayList<Particle> particlesToRemove = new ArrayList<Particle>();
     
     // Check for eating and reproduction
     Iterator<Particle> eatIterator = particles.iterator();
     
-    while(eatIterator.hasNext()) {
+    while(eatIterator.hasNext())
+    {
         Particle particle = eatIterator.next();
-        if (random(1) < eatProbability) {
+        if (random(1) < eatProbability)
+        {
             int closestIndex = particle.findNearest();
-            if (closestIndex != -1) {
-                // Add the new particle to the list
+            if (closestIndex != -1)
+            {
+                // Add the new particle to the list and mark the current for removal
                 newParticles.add(new Particle(random(width), random(height)));
-                // Mark the current particle for removal
                 particlesToRemove.add(particle);
             }
         }
     }
     
     // Add particles if needed
-    if (random(10.0) > 5 && particles.size() < 2500) {
+    if (random(10.0) > 5 && particles.size() < 2500)
+    {
         float rnd = floor(noise(noiseTimeOffset) * 20);
-        for (int j = 0; j < rnd; j++) {
-            // Add the new particle to the list
+        for (int j = 0; j < rnd; j++)
+        {
             newParticles.add(new Particle(random(width), random(height)));
         }
     }
     
     // Remove excess particles if needed
-    if (particles.size() > 2000) {
+    if (particles.size() > 2000)
+    {
         int rnd = (int) random(0, 10);
         Iterator<Particle> excessIterator = particles.iterator();
         int removedCount = 0;
-        while(excessIterator.hasNext() && removedCount < rnd) {
-            // Mark the current particle for removal
+
+        while(excessIterator.hasNext() && removedCount < rnd)
+        {
             particlesToRemove.add(excessIterator.next());
             removedCount++;
         }
     }
     
-    // Remove marked particles
-    particles.removeAll(particlesToRemove);
-    
-    // Add new particles
+    particles.removeAll(particlesToRemove);    
     particles.addAll(newParticles);
     
-    // end draw
     canvas.endDraw();
     image(canvas, 0, 0);
 }
