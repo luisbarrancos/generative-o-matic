@@ -172,7 +172,7 @@ class Particle
             {
                 this.applyForce(n.mult( - 10));
             }
-            if (n.mag() < frameCount % floor(dist) /* 200 */ /* 125 */)
+            if (n.mag() < frameCount % ceil(dist) /* 200 */ /* 125 */)
             {
                 PVector r = PVector.random2D();
                 this.applyForce(n.add(r.mult(100)));
