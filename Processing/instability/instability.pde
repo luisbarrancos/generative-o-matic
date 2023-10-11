@@ -11,9 +11,8 @@ int fieldColumns, fieldRows;
 int noiseTimeOffset = 0;
 
 float fieldMagnitudeOffset = 0;
-boolean showField = true;
 
-int numParticles = 1000; // 12500;
+int numParticles = 1000;
 Particle[] particles;
 PVector[] flowfield;
 PGraphics canvas;

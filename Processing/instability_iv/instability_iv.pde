@@ -1,26 +1,22 @@
 
 
-float inc      = 2.1; // 10.1
-float incStart = 0.005;
-float magInc   = 0.0005;
-int start    = 0;
-int scl      = 12; // 100
-int cols, rows;
-int zoff = 0;
+float noiseDensity = 2.1;
+float noiseIncrement = 0.005;
+float fieldMagnitude = 0.0005;
+int noiseOffset = 0;
+int fieldCellSize = 12;
+int fieldColumns, fieldRows;
+int fieldMagnitudeOffset = 0;
 float fps;
 
-float magOff    = 0;
+float noiseTimeOffset = 0;
 boolean showField = true;
 
-int numParticles = 2000; // 12500;
+int numParticles = 2000;
 Particle[] particles;
 //ArrayList<Particle> particles;
 PVector[] flowfield;
-
-color[] palette2 = {
-  #19324a, #5f8fe8, #5c7eed, #001219, #005f73, #0a9396,
-  #94d2bd, #e9d8a6, #ee9b00, #ca6702, #bb3e03, #ae2012, #9b2226
-};
+PGraphics canvas;
 
 int alpha = 255;
 
@@ -32,16 +28,14 @@ color[] palette = {
   color(240, 135, 0, alpha)
 };
   
-PGraphics pg;
-
 void setup()
 {
     size(640, 480);
-    pg = createGraphics(640, 480);
+    canvas = createGraphics(640, 480);
     frameRate(25);
 
-    cols = (int) floor(width / scl);
-    rows = (int) floor(height / scl);
+    fieldColumns = (int) floor(width / fieldCellSize);
+    fieldRows = (int) floor(height / fieldCellSize);
     blendMode(BLEND); 
     
     background(0, 0.1);
@@ -55,7 +49,7 @@ void setup()
         particles[i] = new Particle();
     }
     
-    flowfield = new PVector[rows * cols];
+    flowfield = new PVector[fieldRows * fieldColumns];
     for (int i = 0; i < flowfield.length; i++)
     {
         flowfield[i] = new PVector(0, 0);
@@ -81,107 +75,102 @@ float[] polar2cartesian(float r, float theta)
 class Particle
 {   
     float maxSpeed = 2.0;
-    PVector pos, prevPos, vel, acc;
+    PVector position, previousPosition, velocity, acceleration;
     color pcolor = color(0);
     PVector decay;
     
     Particle()
     {
-        this.pos = new PVector(random(width), random(0, height));
-        this.prevPos = this.pos.copy();
-        this.vel = new PVector(0.0, 0.0);
-        this.acc = new PVector(0.0, 0.0);
+        this.position = new PVector(random(width), random(0, height));
+        this.previousPosition = this.position.copy();
+        this.velocity = new PVector(0.0, 0.0);
+        this.acceleration = new PVector(0.0, 0.0);
         this.pcolor = color(palette[(int) random(0, palette.length)]);
         this.decay = new PVector(random(1.0), random(1.0));
     }
     
     Particle(float x, float y)
     {
-        this.pos = new PVector(x, y);
-        this.prevPos = this.pos.copy();
-        this.vel = new PVector(0.0, 0.0);
-        this.acc = new PVector(0.0, 0.0);
+        this.position = new PVector(x, y);
+        this.previousPosition = this.position.copy();
+        this.velocity = new PVector(0.0, 0.0);
+        this.acceleration = new PVector(0.0, 0.0);
         this.pcolor = color(palette[(int) random(0, palette.length)]);
         this.decay = new PVector(random(1.0), random(1.0));
     }
         
-    void update()
+    void updateMotion()
     {
-        this.vel.add(this.acc);
-        this.vel.limit(this.maxSpeed);
-        this.pos.add(this.vel);
-        this.acc.mult(0.0); // toggle or scale
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxSpeed);
+        this.position.add(this.velocity);
+        this.acceleration.mult(0.0); // toggle or scale
         /*
-        this.acc.set(
-          max(0.0, this.acc.x - this.decay.x),
-          max(0.0, this.acc.y - this.decay.y)
+        this.acceleration.set(
+          max(0.0, this.acceleration.x - this.decay.x),
+          max(0.0, this.acceleration.y - this.decay.y)
           );
           */
     }
 
     void applyForce(PVector force)
     {
-        this.acc.add(force);
+        this.acceleration.add(force);
     }
 
-    void show()
+    void createTrail()
     {
-        pg.line(
-            this.pos.x, this.pos.y,
-            this.prevPos.x, this.prevPos.y
+        canvas.line(
+            this.position.x, this.position.y,
+            this.previousPosition.x, this.previousPosition.y
             );
-        this.updatePrev();
+        this.updatePreviousPosition();
     }
     
-    void inverseConstraint(PVector pos, float w, float h)
+    void updatePreviousPosition()
     {
-        if (pos.x < 0)
-        {
-            this.pos.x = w;
-            this.updatePrev();
-        }
-        if (pos.x > w)
-        {
-            this.pos.x = 0;
-            this.updatePrev();
-        }
-        if (pos.y < 0)
-        {
-            this.pos.y = h;
-            this.updatePrev();
-        }
-        if (pos.y > h)
-        {
-            this.pos.y = 0;
-            this.updatePrev();
-        }
-    }
-    
-    void updatePrev()
-    {
-        this.prevPos.x = this.pos.x;
-        this.prevPos.y = this.pos.y;
+        this.previousPosition.x = this.position.x;
+        this.previousPosition.y = this.position.y;
     }
 
-    void edges()
+    void wrapAround()
     {
-        this.inverseConstraint(this.pos, width, height);
+        if (this.position.x < 0)
+        {
+            this.position.x = width;
+            this.updatePreviousPosition();
+        }
+        if (this.position.x > width)
+        {
+            this.position.x = 0;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y < 0)
+        {
+            this.position.y = height;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y > height)
+        {
+            this.position.y = 0;
+            this.updatePreviousPosition();
+        }
     }
 
-    void follow(PVector[] vectors)
+    void followField(PVector[] vectors)
     {
-        int x     = floor(this.pos.x / scl);
-        int y     = floor(this.pos.y / scl);
-        int index = (x + y * cols) % vectors.length;
+        int x     = floor(this.position.x / fieldCellSize);
+        int y     = floor(this.position.y / fieldCellSize);
+        int index = (x + y * fieldColumns) % vectors.length;
         PVector force = vectors[index]; // out of bounds
         this.applyForce(force);
     }
     
-    void check(Particle[] particles)
+    void probeNeighborhood(Particle[] particles)
     {
         for (Particle particle : particles)
         {
-            PVector n = new PVector(this.pos.x - particle.pos.x, this.pos.y - particle.pos.y);
+            PVector n = new PVector(this.position.x - particle.position.x, this.position.y - particle.position.y);
             if (n.mag() < 25)
             {
                 this.applyForce(n.mult(-1));
@@ -193,52 +182,52 @@ class Particle
 
 void draw()
 {
-    pg.beginDraw();
-    pg.background(0, 1);
+    canvas.beginDraw();
+    canvas.background(0, 1);
     //background(color(0, 0, 0));
-    pg.tint(0, 4);
+    canvas.tint(0, 4);
 
-    int yoff = start;
+    int yoff = noiseOffset;
     float tdelta = frameCount / (cos(frameCount * 0.01 * TWO_PI) * 0.5 + 0.5);
 
     //noiseDetail(2, tdelta * 0.25 + 0.05);
-    for (int y = 0; y < rows; y++)
+    for (int y = 0; y < fieldRows; y++)
     {
-        int xoff = start;
+        int xoff = noiseOffset;
 
-        for (int x = 0; x < cols; x++)
+        for (int x = 0; x < fieldColumns; x++)
         {   
             //noiseSeed((x + frameCount) * y);
             //noiseDetail(2, tdelta * 0.25 + 0.05);
             //noiseDetail(ceil((x + 1) / 8.0), x / (y + 1));
-            int index = x + y * cols;
-            float angle = noise(xoff, yoff, zoff) * TWO_PI;
+            int index = x + y * fieldColumns;
+            float angle = noise(xoff, yoff, fieldMagnitudeOffset) * TWO_PI;
             PVector v = PVector.fromAngle(angle);
-            float m = map(noise(xoff, yoff, magOff), 0, 1, -5, 5);
+            float m = map(noise(xoff, yoff, noiseTimeOffset), 0, 1, -5, 5);
             v.setMag(m);
 
             flowfield[index] = v;
-            xoff += inc;
+            xoff += noiseDensity;
         }
-        yoff += inc;
+        yoff += noiseDensity;
     }
-    magOff += magInc;
-    zoff += incStart;
-    start -= magInc;
+    noiseTimeOffset += fieldMagnitude;
+    fieldMagnitudeOffset += noiseIncrement;
+    noiseOffset -= fieldMagnitude;
 
     for (Particle particle : particles)
     {
-        pg.stroke(particle.pcolor);
-        particle.follow(flowfield);
-        particle.check(particles);
-        particle.update();
-        particle.edges();
-        particle.show();
+        canvas.stroke(particle.pcolor);
+        particle.followField(flowfield);
+        particle.probeNeighborhood(particles);
+        particle.updateMotion();
+        particle.wrapAround();
+        particle.createTrail();
     }
 
     if (random(10.0) > 5 && particles.length < 2500)
     {
-        float rnd = floor(noise(zoff) * 20);
+        float rnd = floor(noise(fieldMagnitudeOffset) * 20);
 
         for (int i = 0; i < rnd; i++)
         {
@@ -255,7 +244,7 @@ void draw()
         }
     }
     //tint(0, 0.1);
-    pg.endDraw();
-    image(pg, 0, 0);
+    canvas.endDraw();
+    image(canvas, 0, 0);
 }
 
