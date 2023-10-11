@@ -16,6 +16,7 @@ boolean showField = true;
 int numParticles = 1000; // 12500;
 Particle[] particles;
 PVector[] flowfield;
+PGraphics canvas;
 
 int alpha = 15;
 int centerX, centerY;
@@ -38,25 +39,23 @@ color[] palette =
 {
     #001219,#005f73, #0a9396, #94d2bd, #e9d8a6, #ee9b00, #ca6702, #bb3e03, #ae2012, #9b2226
 };
-        
-PGraphics canvas;
     
 void setup()
 {
     size(640, 480, P2D);
     canvas = createGraphics(width, height, P2D);
     frameRate(fps);
+    blendMode(BLEND); 
+    background(0, 0.1);
+    strokeWeight(1.0);
+    stroke(255, 255, 255);
 
     centerX = floor(width / 2);
     centerY = floor(height / 2);
     
     fieldColumns = ceil(width / float(fieldCellSize));
     fieldRows= ceil(height / float(fieldCellSize));
-    blendMode(BLEND); 
-    
-    background(0, 0.1);
-    strokeWeight(1.0);
-    stroke(255, 255, 255);
+
     
     particles = new Particle[numParticles];
     for (int i = 0; i < particles.length; i++)
@@ -120,39 +119,34 @@ class Particle
         this.updatePreviousPosition();
     }
         
-    void wrapAround(PVector position, float w, float h)
-    {
-        if (position.x < 0)
-        {
-            this.position.x = w;
-            this.updatePreviousPosition();
-        }
-        if (position.x > w)
-        {
-            this.position.x = 0;
-            this.updatePreviousPosition();
-        }
-        if (position.y < 0)
-        {
-            this.position.y = h;
-            this.updatePreviousPosition();
-        }
-        if (position.y > h)
-        {
-            this.position.y = 0;
-            this.updatePreviousPosition();
-        }
-    }
-        
     void updatePreviousPosition()
     {
         this.previousPosition.x = this.position.x;
         this.previousPosition.y = this.position.y;
     }
     
-    void edges()
+    void wrapAround()
     {
-        this.wrapAround(this.position, width, height);
+        if (this.position.x < 0)
+        {
+            this.position.x = width;
+            this.updatePreviousPosition();
+        }
+        if (this.position.x > width)
+        {
+            this.position.x = 0;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y < 0)
+        {
+            this.position.y = height;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y > height)
+        {
+            this.position.y = 0;
+            this.updatePreviousPosition();
+        }
     }
     
     void followField(PVector[] vectors)
@@ -221,7 +215,7 @@ void draw()
         particle.followField(flowfield);
         particle.check(particles, dist);
         particle.updateMotion();
-        particle.edges();
+        particle.wrapAround();
         particle.createTrail();
     }
     
