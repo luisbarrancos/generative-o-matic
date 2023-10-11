@@ -18,6 +18,7 @@ Particle[] particles;
 PVector[] flowfield;
 
 int alpha = 15;
+int centerX, centerY;
 
 color[] palette2 =
 {
@@ -38,13 +39,16 @@ color[] palette =
     #001219,#005f73, #0a9396, #94d2bd, #e9d8a6, #ee9b00, #ca6702, #bb3e03, #ae2012, #9b2226
 };
         
-PGraphics pg;
+PGraphics canvas;
     
 void setup()
 {
     size(640, 480, P2D);
-    pg =createGraphics(width, height, P2D);
+    canvas = createGraphics(width, height, P2D);
     frameRate(fps);
+
+    centerX = floor(width / 2);
+    centerY = floor(height / 2);
     
     fieldColumns = ceil(width / float(fieldCellSize));
     fieldRows= ceil(height / float(fieldCellSize));
@@ -109,7 +113,7 @@ class Particle
     
     void createTrail()
     {
-        pg.line(
+        canvas.line(
             this.position.x, this.position.y,
             this.previousPosition.x, this.previousPosition.y
             );
@@ -184,11 +188,11 @@ class Particle
 
 void draw()
 {
-    pg.beginDraw();
-    pg.background(0, 3);
+    canvas.beginDraw();
+    canvas.background(0, 3);
     
     int yOffset = noiseOffset;
-    float dist = dist(mouseX, mouseY, floor(width / 2.0), floor(height / 2.0));
+    float dist = dist(mouseX, mouseY, centerX, centerY);
     
     for (int y = 0; y < fieldRows; y++)
     {
@@ -213,7 +217,7 @@ void draw()
     
     for (Particle particle : particles)
     {
-        pg.stroke(particle.pcolor);
+        canvas.stroke(particle.pcolor);
         particle.followField(flowfield);
         particle.check(particles, dist);
         particle.updateMotion();
@@ -241,6 +245,6 @@ void draw()
         }
     }
 
-    pg.endDraw();
-    image(pg, 0, 0);
+    canvas.endDraw();
+    image(canvas, 0, 0);
 }
