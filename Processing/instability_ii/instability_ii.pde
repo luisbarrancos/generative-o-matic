@@ -169,7 +169,7 @@ void draw()
         particle.applyAttraction();
         particle.applyRepulsion();
         particle.updateMotion();
-        particle.edges();
+        particle.wrapAround();
         particle.createTrail();
         
         // Insert the particle into the grid, for we divide the canvas

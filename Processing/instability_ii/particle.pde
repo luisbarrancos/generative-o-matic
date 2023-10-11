@@ -90,32 +90,6 @@ class Particle
             );
         this.updatePreviousPosition();
     }
-
-    // Think of the particle as moving along the surface of
-    // a thorus, wrapping along x and y.
-    void wrapAround(PVector position, float w, float h)
-    {
-        if (position.x < 0)
-        {
-            this.position.x = w;
-            this.updatePreviousPosition();
-        }
-        if (position.x > w)
-        {
-            this.position.x = 0;
-            this.updatePreviousPosition();
-        }
-        if (position.y < 0)
-        {
-            this.position.y = h;
-            this.updatePreviousPosition();
-        }
-        if (position.y > h)
-        {
-            this.position.y = 0;
-            this.updatePreviousPosition();
-        }
-    }
     
     void updatePreviousPosition()
     {
@@ -123,9 +97,30 @@ class Particle
         this.previousPosition.y = this.position.y;
     }
     
-    void edges()
+    // Think of the particle as moving along the surface of
+    // a thorus, wrapping along x and y.
+    void wrapAround()
     {
-        this.wrapAround(this.position, width, height);
+        if (this.position.x < 0)
+        {
+            this.position.x = width;
+            this.updatePreviousPosition();
+        }
+        if (this.position.x > width)
+        {
+            this.position.x = 0;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y < 0)
+        {
+            this.position.y = height;
+            this.updatePreviousPosition();
+        }
+        if (this.position.y > height)
+        {
+            this.position.y = 0;
+            this.updatePreviousPosition();
+        }
     }
     
     void followField(PVector[] vectors)

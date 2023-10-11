@@ -157,7 +157,7 @@ class Particle
         this.applyForce(force);
     }
         
-    void check(Particle[] particles, float dist)
+    void probeNeighborhood(Particle[] particles, float dist)
     {
         for (Particle particle : particles)
         {
@@ -165,11 +165,14 @@ class Particle
                 this.position.x - particle.position.x,
                 this.position.y - particle.position.y
                 );
-            
+
+            // if the particles are too near, apply a strong repulsive jolt
             if (n.mag() > 400)
             {
                 this.applyForce(n.mult( - 10));
             }
+            // and cyclically destabilize the system by attracting them again
+            // creating cyclical chaotic "pulses"
             if (n.mag() < frameCount % ceil(dist) /* 200 */ /* 125 */)
             {
                 PVector r = PVector.random2D();
@@ -213,7 +216,7 @@ void draw()
     {
         canvas.stroke(particle.pcolor);
         particle.followField(flowfield);
-        particle.check(particles, dist);
+        particle.probeNeighborhood(particles, dist);
         particle.updateMotion();
         particle.wrapAround();
         particle.createTrail();
