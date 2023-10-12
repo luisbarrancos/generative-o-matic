@@ -40,8 +40,8 @@ Some sketches require running a [NodeJS](https://nodejs.org/en/) server though.
  - Flowlock: colored particles with movement rules across a noise vector field.
  - Frosted Window: random colored lines with pseudo-random color gradient.
  - Heatwave I: Procedural cityscape sunset, with gloom and pixelation.
- - HLines: Pseudo-random colored gradient horizontal grid lines.
- - HLines II: Pseudo-random ellipses and color gradient frosted window effect.
+ - HLines I: An attempt at a [Color Field](https://en.wikipedia.org/wiki/Color_field) painting sketch using the slow accumulation of pseudo-random grid lines with a pseudo-random gradient color.
+ - HLines II: Variation of the HLines I using ellipses and circles on a grid, creating a frosted window like effect with a color field.
  - Light Orbitals: wireframe orbitals with lighter desaturated background.
  - Multiplayer Fluids: WebGL fluid dynamics where the user can join a NodeJS server via a QR code, and use his mobile phone to interact with other users and the fluid field.
  - Networked Cymatic: Pseudo-[cymatics](https://en.wikipedia.org/wiki/Cymatics), where the user interaction in a server generates the wave patterns and oscillations on the plane.
